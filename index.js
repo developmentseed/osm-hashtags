@@ -27,34 +27,10 @@ io.on('connection', function (socket) {
   });
 
   emitHashtags();
-  emitBuildingsLeaderBoard();
-  emitHighwaysLeaderBoard();
 });
 
-function emitHighwaysLeaderBoard () {
-  var list = [];
-  redis.zrevrange('highways', 0, 19, 'withscores')
-  .then(function (results) {
-    for (var i = 0; i < results.length; i += 2) {
-      list.push([results[i], results[i + 1]]);
-    }
-    io.emit('highways', list);
-  });
-}
-
-function emitBuildingsLeaderBoard () {
-  var list = [];
-  redis.zrevrange('buildings', 0, 19, 'withscores')
-  .then(function (results) {
-    for (var i = 0; i < results.length; i += 2) {
-      list.push([results[i], results[i + 1]]);
-    }
-    io.emit('buildings', list);
-  });
-}
-
 function emitHashtags () {
-  redis.keys('hashtags:score:*')
+  redis.keys('hashtags:score:6:*')
   .then(function (keys) {
     var list = [];
     redis.mget(keys).then(function (values) {
@@ -69,7 +45,6 @@ function emitHashtags () {
       io.emit('hashtags', list.slice(0, 10));
     });
   });
-
 }
 
 pubsub.subscribe('featuresch', function (err) {
@@ -77,12 +52,11 @@ pubsub.subscribe('featuresch', function (err) {
 });
 
 pubsub.on('message', function (channel, data) {
-  io.emit('log', data);
+  console.log('message:', data);
+  if (data) io.emit('log', data);
 });
 
 setInterval(function () {
   emitHashtags();
-  emitBuildingsLeaderBoard();
-  emitHighwaysLeaderBoard();
 }, 60000);
 
