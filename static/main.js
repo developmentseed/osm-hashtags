@@ -1,4 +1,4 @@
-var root = "http://hashtags.developmentseed.org"
+var root = 'http://104.197.85.117:8080';
 var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
@@ -26,13 +26,19 @@ setInterval(function () {
 
   if (hashtags.length) {
     hashtags.forEach(function (hashtag) {
-      $("[data=" + hashtag + "]").fadeTo('slow', 0.5).fadeTo('slow', 1.0);
+      $("[data=" + hashtag + "]")
+        .css("color", "orange")
+        .fadeTo('slow', 0.5)
+        .fadeTo('slow', 1.0)
+        .hover(function(){$(this).css("color","#D04527");})
+        .mouseout(function(){$(this).css("color", "orange");});
     });
   }
 
-  if (typeof toAdd !== undefined) {
+  if (typeof toAdd !== undefined || toAdd[0] === '{') {
     logroll.prepend('<div class="logitem">' + toAdd + '</div>');
   }
+
   if (logroll.children().length > 100) {
     $('#logroll div:last-child').remove();
   }
@@ -44,12 +50,19 @@ socket.on('log', function (data) {
 
 socket.on('hashtags', handleHashtags);
 
-function handleHashtags (data) {
+socket.on('buildings', function (data) {
+  console.log('buildings', data);
+});
 
+socket.on('highways', function (data) {
+  console.log('highways', data);
+});
+
+function handleHashtags (data) {
   var leaderboard = $('#hashtag-leaderboard');
   leaderboard.empty();
   data.forEach(function (hashtagTuple, index) {
-    var hashtagData = hashtagTuple[0].slice(17);
+    var hashtagData = hashtagTuple[0].slice(15);
     leaderboard.append('<div class="hashtag-item" data="'+ hashtagData +'">' +
                        (index + 1)  + '. ' + hashtagData + '</div>');
   });
@@ -72,3 +85,20 @@ function displayHashtagData (data) {
   });
   map.fitBounds(activeLayerGroup.getBounds());
 }
+
+var hashtagbox = $('#leaderboards');
+var leaderbox = $('#logroll-box');
+
+$('#hashtag-switch').on('click', function(){
+  $("#log-switch").css("background", "rgba(230, 230, 230, 0.8)");
+  $(this).css("background", "rgba(255, 255, 255, 0.9");
+  leaderbox.hide()
+  hashtagbox.show()
+});
+
+$('#log-switch').on('click', function(){
+  $("#hashtag-switch").css("background", "rgba(230, 230, 230, 0.8)");
+  $(this).css("background", "rgba(255, 255, 255, 0.9");  
+ leaderbox.show()
+ hashtagbox.hide()
+});

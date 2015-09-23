@@ -7,18 +7,23 @@
     <script src="http://104.197.85.117:8080/socket.io/socket.io.js"></script>
   </head>
   <body>
+    <div id="header">planetStream</div>
     <div id="map"></div>
-    <div id="container">
-    <div id="leaderboards">
-      <h2>Trending Hashtags</h2>
-      <div id="hashtag-leaderboard"></div>
-    </div>
-    <div id="logs">
-      <h2>Logs</h2>
-      <div id="logroll">
+    <div id="switches"><div id="hashtag-switch">Hashtags</div><div id="log-switch">Raw Stream</div></div>
+    <div id="sidebox">
+      <div id="logroll-box">
+        <h1>Logroll</h1>
+        <div class="linebreak"></div>
+        <div id="logroll"></div>
+      </div>
+      <div id="leaderboards">
+        <h1>Trending Hashtags</h1>
+        <div class="linebreak"></div>
+        <div id="hashtag-leaderboard">
+        </div>
       </div>
     </div>
-    </div>
+    <div id = "footer"></div>
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
 
     <script src="main.js" type="text/javascript" charset="utf-8"></script>
