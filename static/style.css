@@ -1,0 +1,25 @@
+#map {
+  height:40%;
+  width:100%;
+  padding:0px;
+  margin:0px;
+}
+
+#container {
+  z-index: 1000;
+  position: absolute;
+  height: 60%;
+  width: 100%;
+  background: white;
+  padding: 20px;
+}
+
+#leaderboards { 
+  float: left;
+  width: 50%;
+}
+
+#logs {
+  float: right;
+  width: 50%;
+}

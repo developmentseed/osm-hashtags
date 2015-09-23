@@ -1,0 +1,21 @@
+{
+  "name": "leaderboard-server",
+  "version": "0.0.1",
+  "description": "Leaderboard server that interacts with analytics apis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "osm",
+    "gamification",
+    "leaderboard"
+  ],
+  "author": "Marc Farra",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "express": "^4.13.3",
+    "ioredis": "^1.9.0",
+    "socket.io": "^1.3.7"
+  }
+}
