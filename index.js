@@ -42,7 +42,7 @@ function emitHashtags () {
         if (a[1] < b[1]) return 1;
         return 0;
       });
-      io.emit('hashtags', list.slice(0, 10));
+      io.emit('hashtags', list.slice(0, 20));
     });
   });
 }
