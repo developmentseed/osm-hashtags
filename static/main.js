@@ -16,34 +16,37 @@ function handleInitialFeatures (data) {
 }
 
 setInterval(function () {
+  if (!logRoll.length) {
+    return;
+  }
   var toAdd = logRoll.pop();
   var logroll = $('#logroll');
 
   var hashtags = [];
   try {
     hashtags = JSON.parse(toAdd).hashtags;
+    if (hashtags.length) {
+      hashtags.forEach(function (hashtag) {
+        $('[data=' + hashtag + ']')
+          .css('color', 'orange')
+          .fadeTo('slow', 0.5)
+          .fadeTo('slow', 1.0)
+          .hover(function () { $(this).css('color', '#D04527'); })
+          .mouseout(function () {$(this).css('color', 'orange'); });
+      });
+    }
+
+    if (typeof toAdd !== undefined) {
+      logroll.prepend('<div class="logitem">' + toAdd + '</div>');
+    }
+
+    if (logroll.children().length > 100) {
+      $('#logroll div:last-child').remove();
+    }
   } catch(e) {
     console.log(toAdd);
   }
 
-  if (hashtags.length) {
-    hashtags.forEach(function (hashtag) {
-      $('[data=' + hashtag + ']')
-        .css('color', 'orange')
-        .fadeTo('slow', 0.5)
-        .fadeTo('slow', 1.0)
-        .hover(function () { $(this).css('color', '#D04527'); })
-        .mouseout(function () {$(this).css('color', 'orange'); });
-    });
-  }
-
-  if (typeof toAdd !== undefined || toAdd[0] === '{') {
-    logroll.prepend('<div class="logitem">' + toAdd + '</div>');
-  }
-
-  if (logroll.children().length > 100) {
-    $('#logroll div:last-child').remove();
-  }
 }, 1000);
 
 socket.on('log', function (data) {
