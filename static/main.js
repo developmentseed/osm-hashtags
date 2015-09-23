@@ -1,4 +1,4 @@
-var root = 'http://104.197.85.117:8080';
+var root = "http://hashtags.developmentseed.org"
 var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
@@ -35,10 +35,9 @@ setInterval(function () {
     });
   }
 
-  if (typeof toAdd !== undefined || toAdd[0] === '{') {
+  if (typeof toAdd !== undefined) {
     logroll.prepend('<div class="logitem">' + toAdd + '</div>');
   }
-
   if (logroll.children().length > 100) {
     $('#logroll div:last-child').remove();
   }
@@ -50,19 +49,12 @@ socket.on('log', function (data) {
 
 socket.on('hashtags', handleHashtags);
 
-socket.on('buildings', function (data) {
-  console.log('buildings', data);
-});
-
-socket.on('highways', function (data) {
-  console.log('highways', data);
-});
-
 function handleHashtags (data) {
+
   var leaderboard = $('#hashtag-leaderboard');
   leaderboard.empty();
   data.forEach(function (hashtagTuple, index) {
-    var hashtagData = hashtagTuple[0].slice(15);
+    var hashtagData = hashtagTuple[0].slice(17);
     leaderboard.append('<div class="hashtag-item" data="'+ hashtagData +'">' +
                        (index + 1)  + '. ' + hashtagData + '</div>');
   });
