@@ -66,7 +66,7 @@ function handleHashtags (data) {
 }
 
 $('#hashtag-leaderboard').on('click', '.hashtag-item', function (e) {
-  var hashtag = $(this).text().slice(3);
+  var hashtag = $(this).attr('data');
   getHashtagData(hashtag).then(displayHashtagData);
 });
 
