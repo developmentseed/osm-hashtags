@@ -37,10 +37,9 @@ setInterval(function () {
     });
   }
 
-  if (typeof toAdd !== undefined || toAdd[0] === '{') {
+  if (typeof toAdd !== undefined) {
     logroll.prepend('<div class="logitem">' + toAdd + '</div>');
   }
-
   if (logroll.children().length > 100) {
     $('#logroll div:last-child').remove();
   }
@@ -53,10 +52,11 @@ socket.on('log', function (data) {
 socket.on('hashtags', handleHashtags);
 
 function handleHashtags (data) {
+
   var leaderboard = $('#hashtag-leaderboard');
   leaderboard.empty();
   data.forEach(function (hashtagTuple, index) {
-    var hashtagData = hashtagTuple[0].slice(15);
+    var hashtagData = hashtagTuple[0].slice(17);
     leaderboard.append('<div class="hashtag-item" data="' + hashtagData + '">' +
                        (index + 1) + '. ' + hashtagData + '</div>');
   });
