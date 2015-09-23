@@ -1,4 +1,20 @@
-/*global L, $, io, omnivore */
+/*global L, $, io, omnivore, jQuery */
+jQuery.fn.highlight = function () {
+  $(this).each(function () {
+    var el = $(this);
+    $('<div/>')
+    .width(el.outerWidth())
+    .height(el.outerHeight())
+    .css({
+      'position': 'absolute',
+      'left': el.offset().left,
+      'top': el.offset().top,
+      'background-color': '#ffff99',
+      'opacity': '.7',
+      'z-index': '9999999'
+    }).appendTo('body').fadeOut(2000).queue(function () { $(this).remove(); });
+  });
+};
 
 var root = 'http://hashtags.developmentseed.org';
 var map = L.map('map').setView([0, 0], 2);
@@ -28,12 +44,7 @@ setInterval(function () {
 
   if (hashtags.length) {
     hashtags.forEach(function (hashtag) {
-      $('[data=' + hashtag + ']')
-        .css('color', 'orange')
-        .fadeTo('slow', 0.5)
-        .fadeTo('slow', 1.0)
-        .hover(function () { $(this).css('color', '#D04527'); })
-        .mouseout(function () {$(this).css('color', 'orange'); });
+      $('[data=' + hashtag + ']').highlight();
     });
   }
 
@@ -52,7 +63,6 @@ socket.on('log', function (data) {
 socket.on('hashtags', handleHashtags);
 
 function handleHashtags (data) {
-
   var leaderboard = $('#hashtag-leaderboard');
   leaderboard.empty();
   data.forEach(function (hashtagTuple, index) {
