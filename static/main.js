@@ -25,6 +25,7 @@ socket.on('bounds', function (boundsList) {
   });
 });
 
+var similar = {};
 setInterval(function () {
   if (!logRoll.length) {
     return;
@@ -34,7 +35,9 @@ setInterval(function () {
 
   var hashtags = [];
   try {
-    hashtags = JSON.parse(toAdd).hashtags;
+    var item = JSON.parse(toAdd);
+    console.log(item);
+    hashtags = item.hashtags;
     if (hashtags.length) {
       hashtags.forEach(function (hashtag) {
         $('[data=' + hashtag + ']')
@@ -45,9 +48,29 @@ setInterval(function () {
           .mouseout(function () {$(this).css('color', 'orange'); });
       });
     }
+    console.log(similar);
+    if (!similar.count) {
+      similar.action = ((item.action === 'create') ? 'created' : 'modified');
+      similar.user = item.user;
+      similar.feature = item.feature.startsWith('LINESTRING') ? 'way' : 'building';
+      similar.count = 1;
+    } else {
+      var toCompare = {}
+      toCompare.action = ((item.action === 'create') ? 'created' : 'modified');
+      toCompare.user = item.user;
+      toCompare.feature = item.feature.startsWith('LINESTRING') ? 'way' : 'building';
 
-    if (typeof toAdd !== undefined) {
-      logroll.prepend('<div class="logitem">' + toAdd + '</div>');
+      if (toCompare.action === similar.action &&
+          toCompare.user === similar.user &&
+          toCompare.feature === similar.feature) {
+        similar.count += 1;
+      } else {
+        logroll.prepend('<div class="logitem">' +
+                        similar.user + ' ' + similar.action + ' ' +
+                        similar.count + ' ' + similar.feature + '(s)' +
+        '</div>');
+        similar = {};
+      }
     }
 
     if (logroll.children().length > 100) {
@@ -57,7 +80,7 @@ setInterval(function () {
     console.log(toAdd);
   }
 
-}, 1000);
+}, 500);
 
 socket.on('log', function (data) {
   logRoll.push(data);
