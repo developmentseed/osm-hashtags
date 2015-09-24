@@ -36,7 +36,6 @@ setInterval(function () {
   var hashtags = [];
   try {
     var item = JSON.parse(toAdd);
-    console.log(item);
     hashtags = item.hashtags;
     if (hashtags.length) {
       hashtags.forEach(function (hashtag) {
@@ -48,7 +47,6 @@ setInterval(function () {
           .mouseout(function () {$(this).css('color', 'orange'); });
       });
     }
-    console.log(similar);
     if (!similar.count) {
       similar.action = ((item.action === 'create') ? 'created' : 'modified');
       similar.user = item.user;
