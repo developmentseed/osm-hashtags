@@ -5,6 +5,10 @@ from shapely.geometry import Point, LineString, Polygon
 from shapely import wkt
 import redis
 
+import time
+from calendar import timegm
+from datetime import datetime
+
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kinesis import KinesisUtils, InitialPositionInStream
@@ -54,7 +58,9 @@ def outputHashtags(partition):
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
     pipe = r.pipeline()
     for record in partition:
-        pipe.lpush('hashtags:list:' + record[1], record[0])
+        date = timegm(time.strptime(record[0][1].replace('Z', 'GMT'), '%Y-%m-%dT%H:%M:%S%Z'))
+        print date
+        pipe.lpush('hashtags:list:' + record[1], record[0][0] + ':' + str(date))
         pipe.publish('hashtagsch', record)
     pipe.execute()
 
@@ -77,10 +83,10 @@ def outputFeatures(partition):
     pipe.execute()
 
 def createContext(checkpoint):
-    sc = SparkContext(master="local[*]", appName="PlanetStreamHashtags")
+    sc = SparkContext(master="local[*]", appName="PlanetStreamHashtags2")
     ssc = StreamingContext(sc, 30)
 
-    appName = "PlanetStreamHashtags"
+    appName = "PlanetStreamHashtags2"
     streamName = "test"
     endpointUrl = "https://kinesis.us-west-1.amazonaws.com"
     regionName = "us-west-1"
