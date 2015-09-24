@@ -1,6 +1,6 @@
-/*global L, $, io, omnivore */
+/*global L, $, io, omnivore, turf */
 
-var root = '';
+var root = 'http://hashtags.developmentseed.org';
 var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
@@ -15,13 +15,29 @@ function handleInitialFeatures (data) {
   logRoll.push(data);
 }
 
+function calculateCircle (extent) {
+  var centroid = turf.centroid(turf.bboxPolygon(extent));
+  var lowleft = turf.point([extent[0], extent[1]]);
+  var radius = turf.distance(lowleft, centroid, 'kilometers') + 100;
+
+  console.log(centroid, lowleft, radius);
+  return L.circle(centroid.geometry.coordinates.reverse(),
+                  radius * 1000, {color: '#ff7800', weight: 1});
+}
+
 var activeBoundsGroup = new L.FeatureGroup().addTo(map);
 socket.on('bounds', function (boundsList) {
   activeBoundsGroup.clearLayers();
-  boundsList.map(function (extent) {
-    return [ [extent[3], extent[0]], [extent[1], extent[2]]];
-  }).forEach(function (bounds) {
-    activeBoundsGroup.addLayer(L.rectangle(bounds, {color: '#ff7800', weight: 1}));
+  //boundsList.map(function (extent) {
+    //return [ [extent[3], extent[0]], [extent[1], extent[2]]];
+  //}).forEach(function (bounds) {
+    //activeBoundsGroup.addLayer(L.rectangle(bounds, {color: '#ff7800', weight: 1}));
+  //});
+  //boundsList.map(calculateCircle).forEach(function (circle) {
+    //activeBoundsGroup.addLayer(circle);
+  //});
+  boundsList.forEach(function (data) {
+    activeBoundsGroup.addLayer(L.geojson(data));
   });
 });
 

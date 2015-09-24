@@ -66,7 +66,7 @@ function emitHashtags () {
             return {'type': 'Feature', 'geometry': geojson};
           });
           var fc = turf.featurecollection(geojsonList);
-          return turf.extent(fc);
+          return turf.buffer(fc, 100, 'kilometers');
         });
         io.emit('bounds', bounds);
       });
