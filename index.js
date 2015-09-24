@@ -35,6 +35,7 @@ io.on('connection', function (socket) {
 function emitHashtags () {
   redis.keys('hashtags:score:6:*')
   .then(function (keys) {
+    if (!keys.length) return;
     var list = [];
     redis.mget(keys)
     .then(function (values) {
@@ -47,28 +48,45 @@ function emitHashtags () {
         return 0;
       });
 
-      var topHashtags = list.slice(0, 10);
-      io.emit('hashtags', topHashtags);
-      return topHashtags;
+      io.emit('hashtags', list);
+      return list;
     })
     .then(function (list) {
       // For each key, get the last 50 values for that hashtag
-      var keys = list.map(function (tuple) { return tuple[0]; });
-      var getFeatures = keys.map(function (key) {
-        var hashtag = key.slice(17);
-        return redis.lrange('hashtags:list:' + hashtag, 0, 100);
+      var getFeatures = list.map(function (tuple) {
+        var hashtag = tuple[0].slice(17);
+        return redis.lrange('hashtags:list:' + hashtag, 0, tuple[1]);
       });
       return Promise.all(getFeatures)
       .then(function (featuresOfHashtags) {
         // For each hashtag, union the features to get bounds
         var bounds = featuresOfHashtags.map(function (featureList) {
-          var geojsonList = featureList.map(parse).map(function (geojson) {
+          var geojsonList = featureList.map(function (featureDate) {
+            return featureDate.split(':')[0];
+          }).map(parse).map(function (geojson) {
             return {'type': 'Feature', 'geometry': geojson};
           });
           var fc = turf.featurecollection(geojsonList);
           return turf.extent(fc);
         });
         io.emit('bounds', bounds);
+
+        var timeline = featuresOfHashtags
+        .map(function (featureList, index) {
+          return featureList.map(function (feature) {
+            return feature + ':' + list[index][0].slice(17);
+          }).map(function (feature) {
+            return feature.split(':');
+          });
+        })
+        .reduce(function (a, b) { return a.concat(b); })
+        .sort(function (a, b) {
+          if (Number(a[1]) > Number(b[1])) return -1;
+          if (Number(a[1]) < Number(b[1])) return 1;
+          return 0;
+        });
+
+        io.emit(timeline);
       });
     });
   });
@@ -79,10 +97,10 @@ pubsub.subscribe('featuresch', function (err) {
 });
 
 pubsub.on('message', function (channel, data) {
-  console.log('message:', data);
+  //console.log('message:', data);
   if (data) io.emit('log', data);
 });
 
 // Update the leaderboard
-setInterval(emitHashtags, 60000);
+setInterval(emitHashtags, 5000);
 
