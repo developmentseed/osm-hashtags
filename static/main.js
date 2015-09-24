@@ -1,6 +1,6 @@
 /*global L, $, io, omnivore */
 
-var root = '';
+var root = 'http://localhost:8080';
 var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
@@ -8,110 +8,53 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 var socket = io.connect(root);
 
-var logRoll = [];
+var nextTimeline = [];
+var currentTimeline = [];
+socket.on('timeline', function (timeline) {
+  nextTimeline = timeline;
+});
 
-socket.on('initfeatures', handleInitialFeatures);
-function handleInitialFeatures (data) {
-  logRoll.push(data);
+function resetUI () {
+  console.log('resetUI');
 }
 
-var activeBoundsGroup = new L.FeatureGroup().addTo(map);
-socket.on('bounds', function (boundsList) {
-  activeBoundsGroup.clearLayers();
-  boundsList.map(function (extent) {
-    return [ [extent[3], extent[0]], [extent[1], extent[2]]];
-  }).forEach(function (bounds) {
-    activeBoundsGroup.addLayer(L.rectangle(bounds, {color: '#ff7800', weight: 1}));
-  });
-});
+setInterval(function () {
+  if (currentTimeline.length === 0) {
+    currentTimeline = nextTimeline.slice(0);
+    resetUI();
+  } else {
+    render(currentTimeline.pop());
+  }
+}, 50);
 
 var similar = {};
-setInterval(function () {
-  if (!logRoll.length) {
-    return;
-  }
-  var toAdd = logRoll.pop();
+function render (element) {
   var logroll = $('#logroll');
+  var hashtag = element[2];
+  var feature = (element[0].startsWith('P')) ? 'building' : 'way';
+  var time = element[1];
 
-  var hashtags = [];
-  try {
-    var item = JSON.parse(toAdd);
-    hashtags = item.hashtags;
-    if (hashtags.length) {
-      hashtags.forEach(function (hashtag) {
-        $('[data=' + hashtag + ']')
-          .css('color', 'orange')
-          .fadeTo('slow', 0.5)
-          .fadeTo('slow', 1.0)
-          .hover(function () { $(this).css('color', '#D04527'); })
-          .mouseout(function () {$(this).css('color', 'orange'); });
-      });
-    }
-    if (!similar.count) {
-      similar.action = ((item.action === 'create') ? 'created' : 'modified');
-      similar.user = item.user;
-      similar.feature = item.feature.startsWith('LINESTRING') ? 'way' : 'building';
-      similar.count = 1;
+  if (!similar.count) {
+    similar.feature = feature;
+    similar.hashtag = hashtag;
+    similar.time = time;
+    similar.count = 1;
+  } else {
+    if (hashtag === similar.hashtag &&
+        time === similar.time &&
+          feature === similar.feature) {
+      similar.count += 1;
     } else {
-      var toCompare = {}
-      toCompare.action = ((item.action === 'create') ? 'created' : 'modified');
-      toCompare.user = item.user;
-      toCompare.feature = item.feature.startsWith('LINESTRING') ? 'way' : 'building';
-
-      if (toCompare.action === similar.action &&
-          toCompare.user === similar.user &&
-          toCompare.feature === similar.feature) {
-        similar.count += 1;
-      } else {
-        logroll.prepend('<div class="logitem">' +
-                        similar.user + ' ' + similar.action + ' ' +
-                        similar.count + ' ' + similar.feature + '(s)' +
-        '</div>');
-        similar = {};
-      }
+      logroll.prepend('<div class="hashtag-item" data="' + similar.hashtag + '">' +
+                      similar.count + ' ' + similar.feature + '(s) -' +
+                      similar.hashtag + '</div>');
+      similar = {};
     }
-
-    if (logroll.children().length > 100) {
-      $('#logroll div:last-child').remove();
-    }
-  } catch(e) {
-    console.log(toAdd);
   }
 
-}, 500);
-
-socket.on('log', function (data) {
-  logRoll.push(data);
-});
-
-socket.on('hashtags', handleHashtags);
-
-function handleHashtags (data) {
-  var leaderboard = $('#hashtag-leaderboard');
-  leaderboard.empty();
-  data.forEach(function (hashtagTuple, index) {
-    var hashtagData = hashtagTuple[0].slice(17);
-    leaderboard.append('<div class="hashtag-item" data="' + hashtagData + '">' +
-                       (index + 1) + '. ' + hashtagData + '</div>');
-  });
-}
-
-$('#hashtag-leaderboard').on('click', '.hashtag-item', function (e) {
-  var hashtag = $(this).attr('data');
-  getHashtagData(hashtag).then(displayHashtagData);
-});
-
-function getHashtagData (hashtag) {
-  return $.get(root + '/hashtags/' + encodeURIComponent(hashtag));
-}
-var activeLayerGroup = new L.FeatureGroup().addTo(map);
-
-function displayHashtagData (data) {
-  activeLayerGroup.clearLayers();
-  data.forEach(function (item) {
-    activeLayerGroup.addLayer(omnivore.wkt.parse(item));
-  });
-  map.fitBounds(activeLayerGroup.getBounds());
+  if (logroll.children().length > 100) {
+    $('#logroll div:last-child').remove();
+  }
 }
 
 var hashtagbox = $('#leaderboards');

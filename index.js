@@ -86,7 +86,7 @@ function emitHashtags () {
           return 0;
         });
 
-        io.emit(timeline);
+        io.emit('timeline', timeline);
       });
     });
   });
@@ -102,5 +102,5 @@ pubsub.on('message', function (channel, data) {
 });
 
 // Update the leaderboard
-setInterval(emitHashtags, 5000);
+setInterval(emitHashtags, 60000);
 
