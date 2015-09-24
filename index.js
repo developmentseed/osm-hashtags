@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'static')));
 
 app.get('/hashtags/:hashtag', function (req, res, next) {
   var hashtag = req.params.hashtag;
-  redis.lrange('hashtags:list:' + hashtag, 0, 100).then(function (result) {
+  redis.lrange('hashtags:list:' + decodeURIComponent(hashtag), 0, 100).then(function (result) {
     res.send(result);
   });
 });

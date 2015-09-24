@@ -1,6 +1,6 @@
 /*global L, $, io, omnivore */
 
-var root = 'http://hashtags.developmentseed.org';
+var root = '';
 var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
@@ -102,7 +102,7 @@ $('#hashtag-leaderboard').on('click', '.hashtag-item', function (e) {
 });
 
 function getHashtagData (hashtag) {
-  return $.get(root + '/hashtags/' + hashtag);
+  return $.get(root + '/hashtags/' + encodeURIComponent(hashtag));
 }
 var activeLayerGroup = new L.FeatureGroup().addTo(map);
 

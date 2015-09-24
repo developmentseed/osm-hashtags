@@ -26,6 +26,7 @@ def processFeature(obj):
     feature = {}
     for ref in nodes:
         nodelist.append(( float(ref['lon']), float(ref['lat'])))
+#    print nodelist
 
     if has_tag('building')(obj):
         feature = Polygon(nodelist)
@@ -76,14 +77,14 @@ def outputFeatures(partition):
 
 def createContext(checkpoint):
     sc = SparkContext(master="local[*]", appName="PlanetStreamHashtags")
-    ssc = StreamingContext(sc, 1)
+    ssc = StreamingContext(sc, 30)
 
     appName = "PlanetStreamHashtags"
     streamName = "test"
     endpointUrl = "https://kinesis.us-west-1.amazonaws.com"
     regionName = "us-west-1"
     lines = KinesisUtils.createStream(
-        ssc, appName, streamName, endpointUrl, regionName, InitialPositionInStream.LATEST, 2,
+        ssc, appName, streamName, endpointUrl, regionName, InitialPositionInStream.LATEST, 60,
         decoder=lambda obj:obj)
     relevantLines = (lines.map(lambda line: json.loads(line))
             .filter(lambda obj: obj['type'] == 'way')
@@ -104,22 +105,22 @@ def createContext(checkpoint):
 
     hashtags6 = (
         features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
-        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 6 * 3600, 10)
+        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 6 * 3600, 30)
         )
     hashtags6.pprint()
 
-    hashtags12 = (
-        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
-        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 12 * 3600, 10)
-        )
-    hashtags24 = (
-        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
-        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 24 * 3600, 10)
-        )
+#    hashtags12 = (
+#        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
+#        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 12 * 3600, 10)
+#        )
+#    hashtags24 = (
+#        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
+#        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 24 * 3600, 10)
+#        )
 
     hashtags6.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '6')))
-    hashtags12.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '12')))
-    hashtags24.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '24')))
+#    hashtags12.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '12')))
+#    hashtags24.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '24')))
 
     ssc.checkpoint(checkpoint)
     return ssc
