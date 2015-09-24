@@ -47,11 +47,13 @@ function emitHashtags () {
         return 0;
       });
 
-      io.emit('hashtags', list.slice(0, 10));
-      return keys;
+      var topHashtags = list.slice(0, 10);
+      io.emit('hashtags', topHashtags);
+      return topHashtags;
     })
-    .then(function (keys) {
+    .then(function (list) {
       // For each key, get the last 50 values for that hashtag
+      var keys = list.map(function (tuple) { return tuple[0]; });
       var getFeatures = keys.map(function (key) {
         var hashtag = key.slice(17);
         return redis.lrange('hashtags:list:' + hashtag, 0, 100);
