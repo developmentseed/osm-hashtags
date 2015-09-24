@@ -15,6 +15,16 @@ function handleInitialFeatures (data) {
   logRoll.push(data);
 }
 
+var activeBoundsGroup = new L.FeatureGroup().addTo(map);
+socket.on('bounds', function (boundsList) {
+  activeLayerGroup.clearLayers();
+  boundsList.map(function (extent) {
+    return [ [extent[3], extent[0]], [extent[1], extent[2]]];
+  }).forEach(function (bounds) {
+    activeBoundsGroup.addLayer(L.rectangle(bounds, {color: '#ff7800', weight: 1}));
+  });
+});
+
 setInterval(function () {
   if (!logRoll.length) {
     return;

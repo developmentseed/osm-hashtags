@@ -4,6 +4,9 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var path = require('path');
 var Redis = require('ioredis');
+var Promise = require('bluebird');
+var parse = require('wellknown');
+var turf = require('turf');
 
 var pubsub = new Redis();
 var redis = new Redis();
@@ -20,7 +23,7 @@ app.get('/hashtags/:hashtag', function (req, res, next) {
 
 io.on('connection', function (socket) {
   // Send cache to client
-  redis.lrange('features', 0, 50).then(function (results) {
+  redis.lrange('features', 0, 100).then(function (results) {
     results.forEach(function (result) {
       socket.emit('initfeatures', result);
     });
@@ -33,7 +36,8 @@ function emitHashtags () {
   redis.keys('hashtags:score:6:*')
   .then(function (keys) {
     var list = [];
-    redis.mget(keys).then(function (values) {
+    redis.mget(keys)
+    .then(function (values) {
       keys.forEach(function (key, index) {
         list.push([key, parseInt(values[index], 10)]);
       });
@@ -42,7 +46,28 @@ function emitHashtags () {
         if (a[1] < b[1]) return 1;
         return 0;
       });
-      io.emit('hashtags', list.slice(0, 20));
+
+      io.emit('hashtags', list.slice(0, 10));
+      return keys;
+    })
+    .then(function (keys) {
+      // For each key, get the last 50 values for that hashtag
+      var getFeatures = keys.map(function (key) {
+        var hashtag = key.slice(17);
+        return redis.lrange('hashtags:list:' + hashtag, 0, 100);
+      });
+      return Promise.all(getFeatures)
+      .then(function (featuresOfHashtags) {
+        // For each hashtag, union the features to get bounds
+        var bounds = featuresOfHashtags.map(function (featureList) {
+          var geojsonList = featureList.map(parse).map(function (geojson) {
+            return {'type': 'Feature', 'geometry': geojson};
+          });
+          var fc = turf.featurecollection(geojsonList);
+          return turf.extent(fc);
+        });
+        io.emit('bounds', bounds);
+      });
     });
   });
 }
@@ -56,7 +81,6 @@ pubsub.on('message', function (channel, data) {
   if (data) io.emit('log', data);
 });
 
-setInterval(function () {
-  emitHashtags();
-}, 60000);
+// Update the leaderboard
+setInterval(emitHashtags, 60000);
 
