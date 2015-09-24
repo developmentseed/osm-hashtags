@@ -23,7 +23,6 @@ socket.on('bounds', function (boundsList) {
   }).forEach(function (bounds) {
     activeBoundsGroup.addLayer(L.rectangle(bounds, {color: '#ff7800', weight: 1}));
   });
-  map.fitBounds(activeBoundsGroup.getBounds());
 });
 
 setInterval(function () {
