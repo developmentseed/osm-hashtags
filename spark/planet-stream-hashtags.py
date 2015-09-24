@@ -26,22 +26,23 @@ def processFeature(obj):
     feature = {}
     for ref in nodes:
         nodelist.append(( float(ref['lon']), float(ref['lat'])))
-#    print nodelist
+    try:
+        if has_tag('building')(obj):
+            feature = Polygon(nodelist)
+        else:
+            feature = LineString(nodelist)
 
-    if has_tag('building')(obj):
-        feature = Polygon(nodelist)
-    else:
-        feature = LineString(nodelist)
-
-    return {'user': obj['user'],
-            'id': obj['id'],
-            'changeset': obj['metadata']['id'],
-            'date': obj['metadata']['created_at'],
-            'feature': wkt.dumps(feature),
-            'action': obj['action'],
-            'comment': obj['metadata']['comment'],
-            'hashtags': obj['hashtags']
-            }
+        return {'user': obj['user'],
+                'id': obj['id'],
+                'changeset': obj['metadata']['id'],
+                'date': obj['metadata']['created_at'],
+                'feature': wkt.dumps(feature),
+                'action': obj['action'],
+                'comment': obj['metadata']['comment'],
+                'hashtags': obj['hashtags']
+                }
+    except Exception:
+        return None
 
 def ensureComment(obj):
     if 'comment' not in obj['metadata']:
@@ -94,11 +95,12 @@ def createContext(checkpoint):
 
     features = (relevantLines
             .filter(either(has_tag('building'), has_tag('highway')))
-            .map(processFeature))
+            .map(processFeature)
+            .filter(lambda obj: obj is not None))
 
     features.foreachRDD(lambda rdd: rdd.foreachPartition(outputFeatures))
 
-    hashtagFeatures = features.flatMap(lambda obj: [(obj['feature'], hashtag) for hashtag in obj['hashtags']])
+    hashtagFeatures = features.flatMap(lambda obj: [( (obj['feature'], obj['date']), hashtag) for hashtag in obj['hashtags']])
     hashtagFeatures.foreachRDD(lambda rdd: rdd.foreachPartition(outputHashtags))
 
     hashtagFeatures.pprint()
@@ -109,18 +111,8 @@ def createContext(checkpoint):
         )
     hashtags6.pprint()
 
-#    hashtags12 = (
-#        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
-#        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 12 * 3600, 10)
-#        )
-#    hashtags24 = (
-#        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
-#        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 24 * 3600, 10)
-#        )
 
     hashtags6.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '6')))
-#    hashtags12.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '12')))
-#    hashtags24.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '24')))
 
     ssc.checkpoint(checkpoint)
     return ssc
