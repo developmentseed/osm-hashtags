@@ -1,5 +1,4 @@
 /*global L, $, io, omnivore, tinysort */
-
 var root = 'http://hashtags.developmentseed.org';
 
 var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJnUi1mbkVvIn0.018aLhX0Mb0tdtaT2QNe2Q', {
@@ -11,7 +10,6 @@ var map = L.map('map')
     .setView([42.3610, -71.0587], 2);
 
 // new L.Control.Zoom({ position: 'topright' }).addTo(map);
-
 var socket = io.connect(root);
 
 var nextTimeline = [];
@@ -58,6 +56,7 @@ pingLayer.radiusScale().range([2, 18]);
 pingLayer.opacityScale().range([1, 0]);
 
 function preprocess (currentTimeline) {
+  console.log(currentTimeline);
   var similar = {};
   var retTimeline = [];
   currentTimeline.forEach(function (element) {
@@ -88,10 +87,15 @@ function preprocess (currentTimeline) {
 }
 
 function render (element) {
+
   var logroll = $('#logroll');
   var leaderboard = $('#leaderboard');
 
+  var timecode = new Date(Date.parse(element.time));
+  var date = timecode.getUTCHours() + ':' + timecode.getUTCMinutes();
+
   logroll.prepend('<div class="logroll-item">' +
+                  date + ' ' +
                   element.count + ' ' + element.feature + '(s) -' +
                   element.hashtag + '</div>');
   var center = omnivore.wkt.parse(element.last).getBounds().getCenter();

@@ -5,10 +5,6 @@ from shapely.geometry import Point, LineString, Polygon
 from shapely import wkt
 import redis
 
-import time
-from calendar import timegm
-from datetime import datetime
-
 from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kinesis import KinesisUtils, InitialPositionInStream
@@ -42,7 +38,8 @@ def processFeature(obj):
     nodelist = []
     feature = {}
     for ref in nodes:
-        nodelist.append(( float(ref['lon']), float(ref['lat'])))
+        if ('lon' in ref and 'lat' in ref):
+            nodelist.append(( float(ref['lon']), float(ref['lat'])))
     try:
         if has_tag('building')(obj):
             feature = Polygon(nodelist)
@@ -58,8 +55,9 @@ def processFeature(obj):
                 'comment': obj['metadata']['comment'],
                 'hashtags': obj['hashtags']
                 }
-    except Exception:
-        print 'err, ' + nodelist
+    except Exception as e:
+        print e
+        print nodelist
         return None
 
 def ensureComment(obj):
@@ -72,8 +70,7 @@ def outputHashtags(partition):
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
     pipe = r.pipeline()
     for record in partition:
-        date = timegm(time.strptime(record[0][1].replace('Z', 'GMT'), '%Y-%m-%dT%H:%M:%S%Z'))
-        pipe.lpush('hashtags:list:' + record[1], record[0][0] + ':' + str(date))
+        pipe.lpush('hashtags:list:' + record[1], record[0][0] + '|' + record[0][1])
         pipe.publish('hashtagsch', record)
     pipe.execute()
 
