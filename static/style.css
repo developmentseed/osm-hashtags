@@ -15,14 +15,19 @@ body {
   font-weight: bold;
   margin-top: 0px;
   margin-bottom: 2px ;
+  height: 30px;
+  background: rgb(51, 51, 51);
+  color: #fff;
 }
 
-#leaderboards h2 {
+h2 {
   margin: 0px;
   font-style: italic;
-  text-align: center;
   font-size: 0.8em;
   font-weight: 400;
+  position: absolute;
+  padding-left: 3px;
+  bottom: 15px;
 }
 
 .red { 
@@ -39,6 +44,7 @@ body {
   border-radius: 2px;
   width: 250px;
   height: 700px;
+  background: rgb(250, 250, 250);
   overflow: scroll;
 }
 
