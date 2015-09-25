@@ -55,8 +55,9 @@ def processFeature(obj):
                 'comment': obj['metadata']['comment'],
                 'hashtags': obj['hashtags']
                 }
-    except Exception:
-        print 'err, ' + nodelist
+    except Exception as e:
+        print e
+        print nodelist
         return None
 
 def ensureComment(obj):
