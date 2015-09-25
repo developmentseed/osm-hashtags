@@ -42,7 +42,8 @@ def processFeature(obj):
     nodelist = []
     feature = {}
     for ref in nodes:
-        nodelist.append(( float(ref['lon']), float(ref['lat'])))
+        if ('lon' in ref and 'lat' in ref):
+            nodelist.append(( float(ref['lon']), float(ref['lat'])))
     try:
         if has_tag('building')(obj):
             feature = Polygon(nodelist)
