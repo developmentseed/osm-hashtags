@@ -1,4 +1,4 @@
-/*global L, $, io, omnivore */
+/*global L, $, io, omnivore, tinysort */
 
 var root = 'http://localhost:8080';
 var map = L.map('map').setView([0, 0], 2);
@@ -12,10 +12,12 @@ var nextTimeline = [];
 var currentTimeline = [];
 socket.on('timeline', function (timeline) {
   nextTimeline = timeline;
+  console.log(nextTimeline.length);
 });
 
 function resetUI () {
   console.log('resetUI');
+  $('#leaderboard').empty();
 }
 
 setInterval(function () {
@@ -30,6 +32,7 @@ setInterval(function () {
 var similar = {};
 function render (element) {
   var logroll = $('#logroll');
+  var leaderboard = $('#leaderboard');
   var hashtag = element[2];
   var feature = (element[0].startsWith('P')) ? 'building' : 'way';
   var time = element[1];
@@ -45,9 +48,21 @@ function render (element) {
           feature === similar.feature) {
       similar.count += 1;
     } else {
-      logroll.prepend('<div class="hashtag-item" data="' + similar.hashtag + '">' +
+      logroll.prepend('<div class="logroll-item">' +
                       similar.count + ' ' + similar.feature + '(s) -' +
                       similar.hashtag + '</div>');
+      var el;
+      if ($('[tag=' + similar.hashtag + ']').length === 0) {
+        el = $('<li>' + similar.hashtag + '</li>');
+        $(el).attr('tag', similar.hashtag);
+        $(el).attr('count', similar.count);
+        leaderboard.append(el);
+      } else {
+        el = $('[tag=' + similar.hashtag + ']');
+        var count = Number($(el).attr('count'));
+        $(el).attr('count', count + similar.count);
+      }
+      sort();
       similar = {};
     }
   }
@@ -55,6 +70,23 @@ function render (element) {
   if (logroll.children().length > 100) {
     $('#logroll div:last-child').remove();
   }
+}
+function sort () {
+  var ul = document.getElementById('leaderboard');
+  var lis = ul.querySelectorAll('li');
+  var liHeight = lis[0].offsetHeight;
+
+  ul.style.height = ul.offsetHeight + 'px';
+  for (var i = 0, l = lis.length; i < l; i++) {
+    var li = lis[i];
+    li.style.position = 'absolute';
+    li.style.top = i * liHeight + 'px';
+  }
+  tinysort('ul#leaderboard>li').forEach(function (elm, i) {
+    setTimeout((function (elm, i) {
+      elm.style.top = i * liHeight + 'px';
+    }).bind(null, elm, i), 40);
+  });
 }
 
 var hashtagbox = $('#leaderboards');

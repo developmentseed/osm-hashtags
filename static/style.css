@@ -74,6 +74,14 @@ h1{
   font-size: 0.8em;
 }
 
+#leaderboard {
+  position: relative;
+}
+ul#leaderboard li {
+  transition: top 500ms;
+  -webkit-transition: top 500ms;
+}
+
 #leaderboards {
   position: relative;
   z-index: ;

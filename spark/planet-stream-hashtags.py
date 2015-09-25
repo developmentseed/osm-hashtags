@@ -13,9 +13,21 @@ from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kinesis import KinesisUtils, InitialPositionInStream
 
+def removeCommonHashtagMistakes(hashtag):
+    # Check if first letter is a hash
+    if (hashtag[0] == '#'):
+        hashtag = hashtag[1:]
+
+    # Check if last letter is a comma
+    if (hashtag[-1] == ','):
+        hashtag = hashtag[:-1]
+
+    return hashtag
+
 def addHashtags(obj):
     s = obj['metadata']['comment']
     obj['hashtags'] = list(set(part[1:] for part in s.split() if part.startswith('#')))
+    obj['hashtags'] = [removeCommonHashtagMistakes(hashtag) for hashtag in obj['hashtags']]
     return obj
 
 def has_tag(tag):
@@ -46,6 +58,7 @@ def processFeature(obj):
                 'hashtags': obj['hashtags']
                 }
     except Exception:
+        print 'err, ' + nodelist
         return None
 
 def ensureComment(obj):
@@ -59,7 +72,6 @@ def outputHashtags(partition):
     pipe = r.pipeline()
     for record in partition:
         date = timegm(time.strptime(record[0][1].replace('Z', 'GMT'), '%Y-%m-%dT%H:%M:%S%Z'))
-        print date
         pipe.lpush('hashtags:list:' + record[1], record[0][0] + ':' + str(date))
         pipe.publish('hashtagsch', record)
     pipe.execute()
