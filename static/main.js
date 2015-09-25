@@ -99,7 +99,7 @@ function render (element) {
   var leaderboard = $('#leaderboard');
 
   var timecode = new Date(Date.parse(element.time));
-  var date = timecode.getUTCHours() + ':' + timecode.getUTCMinutes();
+  var date = timecode.getHours() + ':' + timecode.getMinutes();
 
   logroll.prepend('<div class="logroll-item"><i>' +
                   date + '</i> - ' +
