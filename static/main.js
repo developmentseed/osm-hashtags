@@ -1,13 +1,20 @@
 /*global L, $, io, omnivore, tinysort */
 var root = 'http://hashtags.developmentseed.org';
+var southWest = L.latLng(-89, 179),
+    northEast = L.latLng(89, -179),
+    bounds = L.latLngBounds(southWest, northEast);
 
 var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJnUi1mbkVvIn0.018aLhX0Mb0tdtaT2QNe2Q', {
+    maxZoom: 2,
+    minZoom: 2,
+    maxBounds: bounds,
     attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
 });
 
+
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([42.3610, -71.0587], 2);
+    .setView([13.025966, -50], 2);
 
 // new L.Control.Zoom({ position: 'topright' }).addTo(map);
 var socket = io.connect(root);
@@ -94,8 +101,8 @@ function render (element) {
   var timecode = new Date(Date.parse(element.time));
   var date = timecode.getUTCHours() + ':' + timecode.getUTCMinutes();
 
-  logroll.prepend('<div class="logroll-item">' +
-                  date + ' ' +
+  logroll.prepend('<div class="logroll-item"><i>' +
+                  date + '</i> - ' +
                   element.count + ' ' + element.feature + '(s) -' +
                   element.hashtag + '</div>');
   var center = omnivore.wkt.parse(element.last).getBounds().getCenter();
