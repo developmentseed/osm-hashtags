@@ -1,10 +1,16 @@
 /*global L, $, io, omnivore, tinysort */
 
-var root = 'http://localhost:8080';
-var map = L.map('map').setView([0, 0], 2);
-L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 18
-}).addTo(map);
+var root = 'http://hashtags.developmentseed.org';
+
+var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJnUi1mbkVvIn0.018aLhX0Mb0tdtaT2QNe2Q', {
+    attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
+});
+
+var map = L.map('map')
+    .addLayer(mapboxTiles)
+    .setView([42.3610, -71.0587], 2);
+
+// new L.Control.Zoom({ position: 'topright' }).addTo(map);
 
 var socket = io.connect(root);
 

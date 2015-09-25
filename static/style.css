@@ -1,5 +1,6 @@
 body {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0px;
 }
 #map {
   height:100%;
@@ -9,15 +10,29 @@ body {
   position: absolute;
 }
 
-#leaderboards h1{
-  font-size: 1.3em;
-  text-align: center;
-  font-weight: bold;
+
+#leaderboards {
+  position: relative;
+  z-index: 1000;
   margin-top: 0px;
   margin-bottom: 2px ;
-  height: 30px;
+  height: 50px;
   background: rgb(51, 51, 51);
-  color: #fff;
+  color: #fff;  
+  text-align: center;
+}
+
+#leaderboards h1{
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+
+#leaderboards p{
+  font-size: 0.6em;  
+  font-style: italic;
+  color: white;
+  margin: 0;
 }
 
 h2 {
@@ -36,16 +51,18 @@ h2 {
 
 #sidebox{
   z-index: 1000;
-  top: 30px;
-  right: 20px;
+  top: 0px;
+  left: 0px;
   position: absolute;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(0, 0, 0, 0.08);
+  background: rgb(20, 20, 20);
+/*  border-right: 2px;
+  border-color: black;*/
+  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(0, 0, 0, 0.2);
   border-radius: 2px;
-  width: 250px;
-  height: 700px;
-  background: rgb(250, 250, 250);
+  width: 300px;
+  height: 100%;
   overflow: scroll;
+  color: white;
 }
 
 
@@ -94,11 +111,6 @@ ul#leaderboard li {
   width: 100%;
 }
 
-#leaderboards {
-  position: relative;
-  z-index: 1000;
-}
-
 .linebreak{
   height: 1px;
   width: 100%;
@@ -114,4 +126,9 @@ ul#leaderboard li {
 
 .hashtag-item:hover{
   color: #D04527;
+}
+
+.leaflet-control-zoom{
+  right: 10px;
+  top: 4px;
 }
