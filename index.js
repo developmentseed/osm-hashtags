@@ -59,6 +59,7 @@ function emitHashtags () {
       });
       return Promise.all(getFeatures)
       .then(function (featuresOfHashtags) {
+        console.log(featuresOfHashtags);
         // For each hashtag, union the features to get bounds
         var bounds = featuresOfHashtags.map(function (featureList) {
           var geojsonList = featureList.map(function (featureDate) {
@@ -97,7 +98,6 @@ pubsub.subscribe('featuresch', function (err) {
 });
 
 pubsub.on('message', function (channel, data) {
-  //console.log('message:', data);
   if (data) io.emit('log', data);
 });
 

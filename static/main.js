@@ -1,6 +1,6 @@
 /*global L, $, io, omnivore, tinysort */
 
-var root = 'http://hashtags.developmentseed.org';
+var root = '';
 var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
@@ -52,6 +52,7 @@ pingLayer.radiusScale().range([2, 18]);
 pingLayer.opacityScale().range([1, 0]);
 
 function preprocess (currentTimeline) {
+  console.log(currentTimeline);
   var similar = {};
   var retTimeline = [];
   currentTimeline.forEach(function (element) {
@@ -82,10 +83,15 @@ function preprocess (currentTimeline) {
 }
 
 function render (element) {
+
   var logroll = $('#logroll');
   var leaderboard = $('#leaderboard');
 
+  var timecode = new Date(Date.parse(element.time));
+  var date = timecode.getUTCHours() + ':' + timecode.getUTCMinutes();
+
   logroll.prepend('<div class="logroll-item">' +
+                  date + ' ' +
                   element.count + ' ' + element.feature + '(s) -' +
                   element.hashtag + '</div>');
   var center = omnivore.wkt.parse(element.last).getBounds().getCenter();
