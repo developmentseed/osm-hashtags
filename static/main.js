@@ -19,12 +19,17 @@ function resetUI () {
   $('#leaderboard').empty();
   $('#logroll').empty();
   renderGroup.clearLayers();
+  $('#progress-bar').css('width', '0%');
 }
 
 var paused = false;
+var progressBarWidth = 0;
+var currentProgress = 0;
 setInterval(function () {
   if (currentTimeline.length === 0) {
     currentTimeline = preprocess(nextTimeline.slice(0));
+    progressBarWidth = currentTimeline.length;
+    currentProgress = 0;
     paused = true;
     setTimeout(function () {
       paused = false;
@@ -70,6 +75,9 @@ function preprocess (currentTimeline) {
       }
     }
   });
+  if (similar.count) {
+    retTimeline.push(similar);
+  }
   return retTimeline;
 }
 
@@ -82,6 +90,10 @@ function render (element) {
                   element.hashtag + '</div>');
   var center = omnivore.wkt.parse(element.last).getBounds().getCenter();
   pingLayer.ping([center.lng, center.lat], 'red');
+
+  currentProgress += 1;
+  $('#progress-bar').css('width', (100 * currentProgress / progressBarWidth) + '%');
+
   var el;
   if ($('[tag=' + element.hashtag + ']').length === 0) {
     el = $('<li>' + element.hashtag + '</li>');
