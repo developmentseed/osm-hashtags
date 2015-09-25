@@ -26,7 +26,7 @@ var paused = false;
 var progressBarWidth = 0;
 var currentProgress = 0;
 setInterval(function () {
-  if (currentTimeline.length === 0) {
+  if (nextTimeline.length > 0 && currentTimeline.length === 0) {
     currentTimeline = preprocess(nextTimeline.slice(0));
     progressBarWidth = currentTimeline.length;
     currentProgress = 0;
@@ -83,7 +83,6 @@ function preprocess (currentTimeline) {
 }
 
 function render (element) {
-
   var logroll = $('#logroll');
   var leaderboard = $('#leaderboard');
 
