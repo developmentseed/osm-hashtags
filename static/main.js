@@ -21,14 +21,21 @@ function resetUI () {
   renderGroup.clearLayers();
 }
 
+var paused = false;
 setInterval(function () {
   if (currentTimeline.length === 0) {
-    currentTimeline = nextTimeline.slice(0);
-    resetUI();
+    currentTimeline = preprocess(nextTimeline.slice(0));
+    paused = true;
+    setTimeout(function () {
+      paused = false;
+      resetUI();
+    }, 3000);
   } else {
-    render(currentTimeline.pop());
+    if (!paused) {
+      render(currentTimeline.pop());
+    }
   }
-}, 10);
+}, 400);
 
 var options = {
   lng: function (d) { return d[0]; },
@@ -39,51 +46,60 @@ var pingLayer = L.pingLayer(options).addTo(map);
 pingLayer.radiusScale().range([2, 18]);
 pingLayer.opacityScale().range([1, 0]);
 
-var similar = {};
+function preprocess (currentTimeline) {
+  var similar = {};
+  var retTimeline = [];
+  currentTimeline.forEach(function (element) {
+    var hashtag = element[2];
+    var feature = (element[0].startsWith('P')) ? 'building' : 'way';
+    var time = element[1];
+    if (!similar.count) {
+      similar.feature = feature;
+      similar.hashtag = hashtag;
+      similar.time = time;
+      similar.last = element[0];
+      similar.count = 1;
+    } else {
+      if (hashtag === similar.hashtag &&
+          time === similar.time &&
+            feature === similar.feature) {
+        similar.count += 1;
+      } else {
+        retTimeline.push(similar);
+        similar = {};
+      }
+    }
+  });
+  return retTimeline;
+}
+
 function render (element) {
   var logroll = $('#logroll');
   var leaderboard = $('#leaderboard');
-  var hashtag = element[2];
-  var feature = (element[0].startsWith('P')) ? 'building' : 'way';
-  var time = element[1];
 
-  if (!similar.count) {
-    similar.feature = feature;
-    similar.hashtag = hashtag;
-    similar.time = time;
-    similar.last = element[0];
-    similar.count = 1;
+  logroll.prepend('<div class="logroll-item">' +
+                  element.count + ' ' + element.feature + '(s) -' +
+                  element.hashtag + '</div>');
+  var center = omnivore.wkt.parse(element.last).getBounds().getCenter();
+  pingLayer.ping([center.lng, center.lat], 'red');
+  var el;
+  if ($('[tag=' + element.hashtag + ']').length === 0) {
+    el = $('<li>' + element.hashtag + '</li>');
+    $(el).attr('tag', element.hashtag);
+    $(el).attr('count', element.count);
+    leaderboard.append(el);
   } else {
-    if (hashtag === similar.hashtag &&
-        time === similar.time &&
-          feature === similar.feature) {
-      similar.count += 1;
-    } else {
-      logroll.prepend('<div class="logroll-item">' +
-                      similar.count + ' ' + similar.feature + '(s) -' +
-                      similar.hashtag + '</div>');
-      var center = omnivore.wkt.parse(similar.last).getBounds().getCenter();
-      pingLayer.ping([center.lng, center.lat], 'red');
-      var el;
-      if ($('[tag=' + similar.hashtag + ']').length === 0) {
-        el = $('<li>' + similar.hashtag + '</li>');
-        $(el).attr('tag', similar.hashtag);
-        $(el).attr('count', similar.count);
-        leaderboard.append(el);
-      } else {
-        el = $('[tag=' + similar.hashtag + ']');
-        var count = Number($(el).attr('count'));
-        $(el).attr('count', count + similar.count);
-      }
-      sort();
-      similar = {};
-    }
+    el = $('[tag=' + element.hashtag + ']');
+    var count = Number($(el).attr('count'));
+    $(el).attr('count', count + element.count);
   }
+  sort();
 
   if (logroll.children().length > 100) {
     $('#logroll div:last-child').remove();
   }
 }
+
 function sort () {
   var ul = document.getElementById('leaderboard');
   var lis = ul.querySelectorAll('li');
@@ -95,7 +111,7 @@ function sort () {
     li.style.position = 'absolute';
     li.style.top = i * liHeight + 'px';
   }
-  tinysort('ul#leaderboard>li').forEach(function (elm, i) {
+  tinysort('ul#leaderboard>li', {attr: 'count', order: 'desc'}).forEach(function (elm, i) {
     setTimeout((function (elm, i) {
       elm.style.top = i * liHeight + 'px';
     }).bind(null, elm, i), 40);
