@@ -1,6 +1,6 @@
 /*global L, $, io, omnivore, tinysort */
 
-var root = 'http://localhost:8080';
+var root = 'http://hashtags.developmentseed.org';
 var map = L.map('map').setView([0, 0], 2);
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
