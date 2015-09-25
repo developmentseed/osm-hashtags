@@ -12,12 +12,13 @@ var nextTimeline = [];
 var currentTimeline = [];
 socket.on('timeline', function (timeline) {
   nextTimeline = timeline;
-  console.log(nextTimeline.length);
 });
 
+var renderGroup = new L.FeatureGroup().addTo(map);
 function resetUI () {
-  console.log('resetUI');
   $('#leaderboard').empty();
+  $('#logroll').empty();
+  renderGroup.clearLayers();
 }
 
 setInterval(function () {
@@ -27,7 +28,16 @@ setInterval(function () {
   } else {
     render(currentTimeline.pop());
   }
-}, 50);
+}, 10);
+
+var options = {
+  lng: function (d) { return d[0]; },
+  lat: function (d) { return d[1]; },
+  duration: 1000
+};
+var pingLayer = L.pingLayer(options).addTo(map);
+pingLayer.radiusScale().range([2, 18]);
+pingLayer.opacityScale().range([1, 0]);
 
 var similar = {};
 function render (element) {
@@ -41,6 +51,7 @@ function render (element) {
     similar.feature = feature;
     similar.hashtag = hashtag;
     similar.time = time;
+    similar.last = element[0];
     similar.count = 1;
   } else {
     if (hashtag === similar.hashtag &&
@@ -51,6 +62,8 @@ function render (element) {
       logroll.prepend('<div class="logroll-item">' +
                       similar.count + ' ' + similar.feature + '(s) -' +
                       similar.hashtag + '</div>');
+      var center = omnivore.wkt.parse(similar.last).getBounds().getCenter();
+      pingLayer.ping([center.lng, center.lat], 'red');
       var el;
       if ($('[tag=' + similar.hashtag + ']').length === 0) {
         el = $('<li>' + similar.hashtag + '</li>');
