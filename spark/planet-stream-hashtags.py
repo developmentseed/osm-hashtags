@@ -26,8 +26,9 @@ def removeCommonHashtagMistakes(hashtag):
 
 def addHashtags(obj):
     s = obj['metadata']['comment']
-    obj['hashtags'] = list(set(part[1:] for part in s.split() if part.startswith('#')))
-    obj['hashtags'] = [removeCommonHashtagMistakes(hashtag) for hashtag in obj['hashtags']]
+    hashtag_set = list(set(part[1:] for part in s.split() if part.startswith('#')))
+    notNull = filter(lambda hashtag: len(hashtag) > 0, hashtag_set)
+    obj['hashtags'] = [removeCommonHashtagMistakes(hashtag) for hashtag in notNull]
     return obj
 
 def has_tag(tag):
