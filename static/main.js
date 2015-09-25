@@ -96,7 +96,7 @@ function render (element) {
 
   var el;
   if ($('[tag=' + element.hashtag + ']').length === 0) {
-    el = $('<li>' + element.hashtag + '</li>');
+    el = $('<li>' + '#' + element.hashtag + '</li>');
     $(el).attr('tag', element.hashtag);
     $(el).attr('count', element.count);
     leaderboard.append(el);

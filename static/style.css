@@ -1,15 +1,28 @@
+body {
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
 #map {
-  height:94%;
+  height:100%;
   width:100%;
   padding:0px;
   margin:0px;
   position: absolute;
 }
 
-h1{
+#leaderboards h1{
   font-size: 1.3em;
+  text-align: center;
+  font-weight: bold;
   margin-top: 0px;
   margin-bottom: 2px ;
+}
+
+#leaderboards h2 {
+  margin: 0px;
+  font-style: italic;
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: 400;
 }
 
 .red { 
@@ -18,31 +31,31 @@ h1{
 
 #sidebox{
   z-index: 1000;
-  top: 0px;
+  top: 30px;
   right: 20px;
   position: absolute;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(0, 0, 0, 0.08);
   border-radius: 2px;
-  padding: 10px 20px 20px 20px;
-  width: 200px;
-  height: 600px;
+  width: 250px;
+  height: 700px;
   overflow: scroll;
 }
 
 
 #logroll-box{
   position: relative;
+  padding: 5px;
 }
 
 #logroll{
   font-size: 0.8em;
-  height: 150px;
+  height: 200px;
   overflow: scroll;
 }
 
 #progress-bar-container {
-  width: 80%; 
+  width: 100%; 
   height: 8px; 
   border: 1px solid black;
   bottom: 0;
@@ -57,12 +70,22 @@ h1{
 
 #leaderboard {
   position: relative;
-  height: 300px;
+  height: 400px;
   overflow: scroll;
+  padding: 0px;
+  margin: 0px;
 }
 ul#leaderboard li {
   transition: top 500ms;
   -webkit-transition: top 500ms;
+  list-style-type: none;
+  height: 30px;
+  line-height: 30px;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  padding: 3px;
+  width: 100%;
 }
 
 #leaderboards {
@@ -72,9 +95,9 @@ ul#leaderboard li {
 
 .linebreak{
   height: 1px;
-  width: 74%;
+  width: 100%;
   background-color: #CCC;
-  margin-bottom: 8px;
+  margin: 0px;
 }
 
 .hashtag-item{
