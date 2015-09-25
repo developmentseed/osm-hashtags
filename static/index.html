@@ -1,4 +1,4 @@
-<html>
+<html> 
   <head>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.css" />
     <link rel="stylesheet" href="style.css" type="text/css" media="screen" title="no title" charset="utf-8">
@@ -9,18 +9,23 @@
   <body>
     <div id="map"></div>
     <div id="sidebox">
-      <div id="leaderboards">
-        <h1>OSM HASHTAGS</h1>
-        <ul id="leaderboard"></ul>
+      <div id="leadertitle">
+        <h1>TRENDING OSM HASHTAGS</h1>
+        <p>over the last six hours</p>
       </div>
+      <div id="leaderboards">
+          <ul id="leaderboard"></ul>
+      </div>
+      <div class="linebreak"></div>
       <div id="logroll-box">
-        <div class="linebreak"></div>
         <div id="logroll"></div>
       </div>
-      <h2>Last 6 hours</h2>
       <div id="progress-bar-container" >
         <div id="progress-bar"></div>
       </div>
+    </div>
+    <div id = "logo">
+      <img src="./images/logo_horizontal_white.svg"></img>
     </div>
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/tinysort/2.2.2/tinysort.min.js" type="text/javascript" charset="utf-8"></script>
