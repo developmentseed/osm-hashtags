@@ -62,7 +62,7 @@ function emitHashtags () {
         // For each hashtag, union the features to get bounds
         var bounds = featuresOfHashtags.map(function (featureList) {
           var geojsonList = featureList.map(function (featureDate) {
-            return featureDate.split(':')[0];
+            return featureDate.split('|')[0];
           }).map(parse).map(function (geojson) {
             return {'type': 'Feature', 'geometry': geojson};
           });
@@ -74,15 +74,15 @@ function emitHashtags () {
         var timeline = featuresOfHashtags
         .map(function (featureList, index) {
           return featureList.map(function (feature) {
-            return feature + ':' + list[index][0].slice(17);
+            return feature + '|' + list[index][0].slice(17);
           }).map(function (feature) {
-            return feature.split(':');
+            return feature.split('|');
           });
         })
         .reduce(function (a, b) { return a.concat(b); })
         .sort(function (a, b) {
-          if (Number(a[1]) > Number(b[1])) return -1;
-          if (Number(a[1]) < Number(b[1])) return 1;
+          if (Date.parse(a[1]) > Date.parse(b[1])) return -1;
+          if (Date.parse(a[1]) < Date.parse(b[1])) return 1;
           return 0;
         });
 
