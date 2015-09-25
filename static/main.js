@@ -1,5 +1,6 @@
 /*global L, $, io, omnivore, tinysort */
-var root = 'http://hashtags.developmentseed.org';
+// var root = 'http://hashtags.developmentseed.org';
+var root = '';
 var southWest = L.latLng(-89, 179),
     northEast = L.latLng(89, -179),
     bounds = L.latLngBounds(southWest, northEast);
@@ -10,7 +11,6 @@ var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x
     maxBounds: bounds,
     attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
 });
-
 
 var map = L.map('map')
     .addLayer(mapboxTiles)
@@ -37,7 +37,8 @@ var paused = false;
 var progressBarWidth = 0;
 var currentProgress = 0;
 setInterval(function () {
-  if (nextTimeline.length > 0 && currentTimeline.length === 0) {
+  if (nextTimeline.length === 0) { return; }
+  if (currentTimeline.length === 0) {
     currentTimeline = preprocess(nextTimeline.slice(0));
     progressBarWidth = currentTimeline.length;
     currentProgress = 0;
