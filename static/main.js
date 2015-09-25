@@ -1,117 +1,149 @@
-/*global L, $, io, omnivore */
+/*global L, $, io, omnivore, tinysort */
+var root = 'http://hashtags.developmentseed.org';
+var southWest = L.latLng(-89, 179),
+    northEast = L.latLng(89, -179),
+    bounds = L.latLngBounds(southWest, northEast);
 
-var root = '';
-var map = L.map('map').setView([0, 0], 2);
-L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 18
-}).addTo(map);
-
-var socket = io.connect(root);
-
-var logRoll = [];
-
-socket.on('initfeatures', handleInitialFeatures);
-function handleInitialFeatures (data) {
-  logRoll.push(data);
-}
-
-var activeBoundsGroup = new L.FeatureGroup().addTo(map);
-socket.on('bounds', function (boundsList) {
-  activeBoundsGroup.clearLayers();
-  boundsList.map(function (extent) {
-    return [ [extent[3], extent[0]], [extent[1], extent[2]]];
-  }).forEach(function (bounds) {
-    activeBoundsGroup.addLayer(L.rectangle(bounds, {color: '#ff7800', weight: 1}));
-  });
+var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJnUi1mbkVvIn0.018aLhX0Mb0tdtaT2QNe2Q', {
+    maxZoom: 2,
+    minZoom: 2,
+    maxBounds: bounds,
+    attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
 });
 
-var similar = {};
-setInterval(function () {
-  if (!logRoll.length) {
-    return;
-  }
-  var toAdd = logRoll.pop();
-  var logroll = $('#logroll');
 
-  var hashtags = [];
-  try {
-    var item = JSON.parse(toAdd);
-    hashtags = item.hashtags;
-    if (hashtags.length) {
-      hashtags.forEach(function (hashtag) {
-        $('[data=' + hashtag + ']')
-          .css('color', 'orange')
-          .fadeTo('slow', 0.5)
-          .fadeTo('slow', 1.0)
-          .hover(function () { $(this).css('color', '#D04527'); })
-          .mouseout(function () {$(this).css('color', 'orange'); });
-      });
+var map = L.map('map')
+    .addLayer(mapboxTiles)
+    .setView([13.025966, -50], 2);
+
+// new L.Control.Zoom({ position: 'topright' }).addTo(map);
+var socket = io.connect(root);
+
+var nextTimeline = [];
+var currentTimeline = [];
+socket.on('timeline', function (timeline) {
+  nextTimeline = timeline;
+});
+
+var renderGroup = new L.FeatureGroup().addTo(map);
+function resetUI () {
+  $('#leaderboard').empty();
+  $('#logroll').empty();
+  renderGroup.clearLayers();
+  $('#progress-bar').css('width', '0%');
+}
+
+var paused = false;
+var progressBarWidth = 0;
+var currentProgress = 0;
+setInterval(function () {
+  if (nextTimeline.length > 0 && currentTimeline.length === 0) {
+    currentTimeline = preprocess(nextTimeline.slice(0));
+    progressBarWidth = currentTimeline.length;
+    currentProgress = 0;
+    paused = true;
+    setTimeout(function () {
+      paused = false;
+      resetUI();
+    }, 3000);
+  } else {
+    if (!paused) {
+      render(currentTimeline.pop());
     }
+  }
+}, 400);
+
+var options = {
+  lng: function (d) { return d[0]; },
+  lat: function (d) { return d[1]; },
+  duration: 1000
+};
+var pingLayer = L.pingLayer(options).addTo(map);
+pingLayer.radiusScale().range([2, 18]);
+pingLayer.opacityScale().range([1, 0]);
+
+function preprocess (currentTimeline) {
+  console.log(currentTimeline);
+  var similar = {};
+  var retTimeline = [];
+  currentTimeline.forEach(function (element) {
+    var hashtag = element[2];
+    var feature = (element[0].startsWith('P')) ? 'building' : 'way';
+    var time = element[1];
     if (!similar.count) {
-      similar.action = ((item.action === 'create') ? 'created' : 'modified');
-      similar.user = item.user;
-      similar.feature = item.feature.startsWith('LINESTRING') ? 'way' : 'building';
+      similar.feature = feature;
+      similar.hashtag = hashtag;
+      similar.time = time;
+      similar.last = element[0];
       similar.count = 1;
     } else {
-      var toCompare = {}
-      toCompare.action = ((item.action === 'create') ? 'created' : 'modified');
-      toCompare.user = item.user;
-      toCompare.feature = item.feature.startsWith('LINESTRING') ? 'way' : 'building';
-
-      if (toCompare.action === similar.action &&
-          toCompare.user === similar.user &&
-          toCompare.feature === similar.feature) {
+      if (hashtag === similar.hashtag &&
+          time === similar.time &&
+            feature === similar.feature) {
         similar.count += 1;
       } else {
-        logroll.prepend('<div class="logitem">' +
-                        similar.user + ' ' + similar.action + ' ' +
-                        similar.count + ' ' + similar.feature + '(s)' +
-        '</div>');
+        retTimeline.push(similar);
         similar = {};
       }
     }
-
-    if (logroll.children().length > 100) {
-      $('#logroll div:last-child').remove();
-    }
-  } catch(e) {
-    console.log(toAdd);
+  });
+  if (similar.count) {
+    retTimeline.push(similar);
   }
-
-}, 500);
-
-socket.on('log', function (data) {
-  logRoll.push(data);
-});
-
-socket.on('hashtags', handleHashtags);
-
-function handleHashtags (data) {
-  var leaderboard = $('#hashtag-leaderboard');
-  leaderboard.empty();
-  data.forEach(function (hashtagTuple, index) {
-    var hashtagData = hashtagTuple[0].slice(17);
-    leaderboard.append('<div class="hashtag-item" data="' + hashtagData + '">' +
-                       (index + 1) + '. ' + hashtagData + '</div>');
-  });
+  return retTimeline;
 }
 
-$('#hashtag-leaderboard').on('click', '.hashtag-item', function (e) {
-  var hashtag = $(this).attr('data');
-  getHashtagData(hashtag).then(displayHashtagData);
-});
+function render (element) {
+  var logroll = $('#logroll');
+  var leaderboard = $('#leaderboard');
 
-function getHashtagData (hashtag) {
-  return $.get(root + '/hashtags/' + encodeURIComponent(hashtag));
+  var timecode = new Date(Date.parse(element.time));
+  var date = timecode.getUTCHours() + ':' + timecode.getUTCMinutes();
+
+  logroll.prepend('<div class="logroll-item"><i>' +
+                  date + '</i> - ' +
+                  element.count + ' ' + element.feature + '(s) -' +
+                  element.hashtag + '</div>');
+  var center = omnivore.wkt.parse(element.last).getBounds().getCenter();
+  pingLayer.ping([center.lng, center.lat], 'red');
+
+  currentProgress += 1;
+  $('#progress-bar').css('width', (100 * currentProgress / progressBarWidth) + '%');
+
+  var el;
+  if ($('[tag=' + element.hashtag + ']').length === 0) {
+    el = $('<li>' + '#' + element.hashtag + '</li>');
+    $(el).attr('tag', element.hashtag);
+    $(el).attr('count', element.count);
+    leaderboard.append(el);
+  } else {
+    el = $('[tag=' + element.hashtag + ']');
+    var count = Number($(el).attr('count'));
+    $(el).attr('count', count + element.count);
+  }
+  sort();
+
+  if (logroll.children().length > 100) {
+    $('#logroll div:last-child').remove();
+  }
 }
-var activeLayerGroup = new L.FeatureGroup().addTo(map);
 
-function displayHashtagData (data) {
-  activeLayerGroup.clearLayers();
-  data.forEach(function (item) {
-    activeLayerGroup.addLayer(omnivore.wkt.parse(item));
+function sort () {
+  var ul = document.getElementById('leaderboard');
+  var lis = ul.querySelectorAll('li');
+  var liHeight = lis[0].offsetHeight;
+
+  ul.style.height = ul.offsetHeight + 'px';
+  for (var i = 0, l = lis.length; i < l; i++) {
+    var li = lis[i];
+    li.style.position = 'absolute';
+    li.style.top = i * liHeight + 'px';
+  }
+  tinysort('ul#leaderboard>li', {attr: 'count', order: 'desc'}).forEach(function (elm, i) {
+    setTimeout((function (elm, i) {
+      elm.style.top = i * liHeight + 'px';
+    }).bind(null, elm, i), 40);
   });
-  map.fitBounds(activeLayerGroup.getBounds());
 }
 
 var hashtagbox = $('#leaderboards');

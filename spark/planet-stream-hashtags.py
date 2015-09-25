@@ -9,9 +9,22 @@ from pyspark import SparkContext
 from pyspark.streaming import StreamingContext
 from pyspark.streaming.kinesis import KinesisUtils, InitialPositionInStream
 
+def removeCommonHashtagMistakes(hashtag):
+    # Check if first letter is a hash
+    if (hashtag[0] == '#'):
+        hashtag = hashtag[1:]
+
+    # Check if last letter is a comma
+    if (hashtag[-1] == ','):
+        hashtag = hashtag[:-1]
+
+    return hashtag
+
 def addHashtags(obj):
     s = obj['metadata']['comment']
-    obj['hashtags'] = list(set(part[1:] for part in s.split() if part.startswith('#')))
+    hashtag_set = list(set(part[1:] for part in s.split() if part.startswith('#')))
+    notNull = filter(lambda hashtag: len(hashtag) > 0, hashtag_set)
+    obj['hashtags'] = [removeCommonHashtagMistakes(hashtag) for hashtag in notNull]
     return obj
 
 def has_tag(tag):
@@ -25,23 +38,27 @@ def processFeature(obj):
     nodelist = []
     feature = {}
     for ref in nodes:
-        nodelist.append(( float(ref['lon']), float(ref['lat'])))
-#    print nodelist
+        if ('lon' in ref and 'lat' in ref):
+            nodelist.append(( float(ref['lon']), float(ref['lat'])))
+    try:
+        if has_tag('building')(obj):
+            feature = Polygon(nodelist)
+        else:
+            feature = LineString(nodelist)
 
-    if has_tag('building')(obj):
-        feature = Polygon(nodelist)
-    else:
-        feature = LineString(nodelist)
-
-    return {'user': obj['user'],
-            'id': obj['id'],
-            'changeset': obj['metadata']['id'],
-            'date': obj['metadata']['created_at'],
-            'feature': wkt.dumps(feature),
-            'action': obj['action'],
-            'comment': obj['metadata']['comment'],
-            'hashtags': obj['hashtags']
-            }
+        return {'user': obj['user'],
+                'id': obj['id'],
+                'changeset': obj['metadata']['id'],
+                'date': obj['metadata']['created_at'],
+                'feature': wkt.dumps(feature),
+                'action': obj['action'],
+                'comment': obj['metadata']['comment'],
+                'hashtags': obj['hashtags']
+                }
+    except Exception as e:
+        print e
+        print nodelist
+        return None
 
 def ensureComment(obj):
     if 'comment' not in obj['metadata']:
@@ -53,7 +70,7 @@ def outputHashtags(partition):
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
     pipe = r.pipeline()
     for record in partition:
-        pipe.lpush('hashtags:list:' + record[1], record[0])
+        pipe.lpush('hashtags:list:' + record[1], record[0][0] + '|' + record[0][1])
         pipe.publish('hashtagsch', record)
     pipe.execute()
 
@@ -76,10 +93,10 @@ def outputFeatures(partition):
     pipe.execute()
 
 def createContext(checkpoint):
-    sc = SparkContext(master="local[*]", appName="PlanetStreamHashtags")
+    sc = SparkContext(master="local[*]", appName="PlanetStreamHashtags2")
     ssc = StreamingContext(sc, 30)
 
-    appName = "PlanetStreamHashtags"
+    appName = "PlanetStreamHashtags2"
     streamName = "test"
     endpointUrl = "https://kinesis.us-west-1.amazonaws.com"
     regionName = "us-west-1"
@@ -94,11 +111,12 @@ def createContext(checkpoint):
 
     features = (relevantLines
             .filter(either(has_tag('building'), has_tag('highway')))
-            .map(processFeature))
+            .map(processFeature)
+            .filter(lambda obj: obj is not None))
 
     features.foreachRDD(lambda rdd: rdd.foreachPartition(outputFeatures))
 
-    hashtagFeatures = features.flatMap(lambda obj: [(obj['feature'], hashtag) for hashtag in obj['hashtags']])
+    hashtagFeatures = features.flatMap(lambda obj: [( (obj['feature'], obj['date']), hashtag) for hashtag in obj['hashtags']])
     hashtagFeatures.foreachRDD(lambda rdd: rdd.foreachPartition(outputHashtags))
 
     hashtagFeatures.pprint()
@@ -109,18 +127,8 @@ def createContext(checkpoint):
         )
     hashtags6.pprint()
 
-#    hashtags12 = (
-#        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
-#        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 12 * 3600, 10)
-#        )
-#    hashtags24 = (
-#        features.flatMap(lambda obj: [(hashtag,1) for hashtag in obj['hashtags']])
-#        .reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 24 * 3600, 10)
-#        )
 
     hashtags6.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '6')))
-#    hashtags12.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '12')))
-#    hashtags24.foreachRDD(lambda rdd: rdd.foreachPartition(lambda partition: outputTrending(partition, '24')))
 
     ssc.checkpoint(checkpoint)
     return ssc

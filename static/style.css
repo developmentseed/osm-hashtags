@@ -1,89 +1,136 @@
+document{
+    background-color: black;
+}
+
+body {
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0px;
+}
 #map {
-  height:94%;
+  height:100%;
   width:100%;
   padding:0px;
   margin:0px;
   position: absolute;
 }
 
-h1{
-  font-size: 1.3em;
-  margin-top: 0px;
-  margin-bottom: 2px ;
+
+#leaderboards {
+  position: relative;
+  z-index: 1000;
+  color: #fff;  
+}
+
+#leadertitle{
+  padding-top: 10px;
+  margin-bottom: 2px;
+  height: 56px;
+  background: rgb(51, 51, 51);
+  border-bottom-color: #666;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+}
+
+#leadertitle h1{
+  font-size: 1.2em;
+  margin: 0;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+#leadertitle p{
+  font-size: 0.8em;  
+  color: white;
+  margin: 0;
+  text-align: center;
+}
+
+h2 {
+  margin: 0px;
+  font-style: italic;
+  font-size: 0.8em;
+  font-weight: 400;
+  position: absolute;
+  padding-left: 3px;
+  bottom: 15px;
+}
+
+.red {
+  fill: rgba(0,0,0,0);
+  stroke: gold;
+  stroke-width: 1px;
 }
 
 #sidebox{
   z-index: 1000;
-  top: 84px;
-  right: 20px;
+  top: 0px;
+  left: 0px;
   position: absolute;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(0, 0, 0, 0.08);
+  background: rgb(20, 20, 20);
+/*  border-right: 2px;
+  border-color: black;*/
+  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(0, 0, 0, 0.2);
   border-radius: 2px;
-  padding: 10px 20px 20px 20px;
-  width: 200px;
-  height: 450px;
-  overflow: scroll;
+  width: 300px;
+  height: 100%;
+  color: white;
 }
 
-#switches{
-  width: 240px;
-  z-index: 1000;
-  z-index: 1000;
-  top: 59px;
-  right: 20px;
-  position: absolute;
-}
-
-#hashtag-switch{
-  cursor: pointer;
-  width:49%;
-  float: left;
-  height:24px;
-  z-index: 904;
-  display: inline-block;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(0, 0, 0, 0.08);
-  border-top-left-radius: 7px;
-  border-top-right-radius: 7px;
-  line-height: 160%;
-}
-
-#log-switch{
-  cursor: pointer;
-  float: right;
-  width: 49%;
-  height: 24px;
-  z-index: 904;
-  display: inline-block;
-  text-align: center;
-  background: rgba(230, 230, 230, 0.8);
-  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(0, 0, 0, 0.08);
-  border-top-left-radius: 7px;
-  border-top-right-radius: 7px;
-  line-height: 160%;
-}
 
 #logroll-box{
   position: relative;
-  display: none;
+  height:25%;
+  padding: 5px;
+  overflow: scroll;
 }
 
 #logroll{
   font-size: 0.8em;
+  color: #999;
+  height: 200px;
 }
 
-#leaderboards {
+#progress-bar-container {
+  width: 100%; 
+  height: 8px; 
+  border: 1px solid black;
+  bottom: 0;
+  position: absolute;
+}
+
+#progress-bar {
+  height: 8px;
+  background-color: #CF4828;
+  width: 50%;
+}
+
+#leaderboard {
   position: relative;
-  z-index: ;
+  height: 60%;
+  overflow: scroll;
+  padding: 0px;
+  margin: 0px;
+}
+
+ul#leaderboard li {
+  transition: top 500ms;
+  -webkit-transition: top 500ms;
+  list-style-type: none;
+  height: 30px;
+  line-height: 30px;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  padding: 3px;
+  width: 100%;
 }
 
 .linebreak{
   height: 1px;
-  width: 74%;
+  width: 100%;
   background-color: #CCC;
-  margin-bottom: 8px;
+  margin: 0px;
 }
 
 .hashtag-item{
@@ -94,4 +141,20 @@ h1{
 
 .hashtag-item:hover{
   color: #D04527;
+}
+
+.leaflet-control-zoom{
+  right: 10px;
+  top: 4px;
+}
+
+.leaflet-container {
+    background-color:rgba(0,0,0,1);
+}
+
+#logo{
+  z-index: 1000;
+  position:absolute;
+  top: 8px;
+  right: 8px;
 }
