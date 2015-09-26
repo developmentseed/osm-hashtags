@@ -5,8 +5,6 @@ var io = require('socket.io')(server);
 var path = require('path');
 var Redis = require('ioredis');
 var Promise = require('bluebird');
-var parse = require('wellknown');
-var turf = require('turf');
 
 var pubsub = new Redis();
 var redis = new Redis();
@@ -71,13 +69,6 @@ function emitHashtags () {
       keys.forEach(function (key, index) {
         list.push([key, parseInt(values[index], 10)]);
       });
-      list.sort(function (a, b) {
-        if (a[1] > b[1]) return -1;
-        if (a[1] < b[1]) return 1;
-        return 0;
-      });
-
-      io.emit('hashtags', list);
       return list;
     })
     .then(function (list) {
@@ -88,18 +79,6 @@ function emitHashtags () {
       });
       return Promise.all(getFeatures)
       .then(function (featuresOfHashtags) {
-        // For each hashtag, union the features to get bounds
-        var bounds = featuresOfHashtags.map(function (featureList) {
-          var geojsonList = featureList.map(function (featureDate) {
-            return featureDate.split('|')[0];
-          }).map(parse).map(function (geojson) {
-            return {'type': 'Feature', 'geometry': geojson};
-          });
-          var fc = turf.featurecollection(geojsonList);
-          return turf.extent(fc);
-        });
-        io.emit('bounds', bounds);
-
         var timeline = featuresOfHashtags
         .map(function (featureList, index) {
           return featureList.map(function (feature) {
@@ -108,16 +87,18 @@ function emitHashtags () {
             return feature.split('|');
           });
         })
-        .reduce(function (a, b) { return a.concat(b); })
-        .sort(function (a, b) {
-          if (Date.parse(a[1]) > Date.parse(b[1])) return -1;
-          if (Date.parse(a[1]) < Date.parse(b[1])) return 1;
-          return 0;
-        });
+        .reduce(function (a, b) { return a.concat(b); });
 
         console.log('oldlength', timeline.length);
         timeline = preprocess(timeline);
         console.log('newlength', timeline.length);
+
+        timeline = timeline.sort(function (a, b) {
+          if (Date.parse(a.time) > Date.parse(b.time)) return -1;
+          if (Date.parse(a.time) < Date.parse(b.time)) return 1;
+          return 0;
+        });
+
         redis.set('timeline', JSON.stringify(timeline));
 
         io.emit('timeline', timeline);
