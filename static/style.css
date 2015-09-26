@@ -2,6 +2,18 @@ document{
     background-color: black;
 }
 
+.color_0{fill: #ffffff; stroke-width: 1px;}
+.color_1{fill: #8dd3c7; stroke-width: 1px;}
+.color_2{fill: #ffffb3; stroke-width: 1px;}
+.color_3{fill: #bebada; stroke-width: 1px;}
+.color_4{fill: #fb8072; stroke-width: 1px;}
+.color_5{fill: #80b1d3; stroke-width: 1px;}
+.color_6{fill: #fdb462; stroke-width: 1px;}
+.color_7{fill: #b3de69; stroke-width: 1px;}
+.color_8{fill: #fccde5; stroke-width: 1px;}
+.color_9{fill: #d9d9d9; stroke-width: 1px;}
+.color_10{fill: #bc80bd; stroke-width: 1px;}
+
 body {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     margin: 0px;

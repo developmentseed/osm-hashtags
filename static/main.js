@@ -1,9 +1,9 @@
 /*global L, $, io, omnivore, tinysort */
 // var root = 'http://hashtags.developmentseed.org';
 var root = '';
-var southWest = L.latLng(-89, 179),
-    northEast = L.latLng(89, -179),
-    bounds = L.latLngBounds(southWest, northEast);
+var southWest = L.latLng(-89, 179);
+var northEast = L.latLng(89, -179);
+var bounds = L.latLngBounds(southWest, northEast);
 
 var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJnUi1mbkVvIn0.018aLhX0Mb0tdtaT2QNe2Q', {
     maxZoom: 2,
@@ -64,7 +64,6 @@ pingLayer.radiusScale().range([2, 18]);
 pingLayer.opacityScale().range([1, 0]);
 
 function preprocess (currentTimeline) {
-  console.log(currentTimeline);
   var similar = {};
   var retTimeline = [];
   currentTimeline.forEach(function (element) {
@@ -94,6 +93,21 @@ function preprocess (currentTimeline) {
   return retTimeline;
 }
 
+var colors = '0,1,2,3,4,5,6,7,8,9,10'.split(',');
+var colorMap = {
+  '0': '#ffffff',
+  '1': '#8dd3c7',
+  '2': '#ffffb3',
+  '3': '#bebada',
+  '4': '#fb8072',
+  '5': '#80b1d3',
+  '6': '#fdb462',
+  '7': '#b3de69',
+  '8': '#fccde5',
+  '9': '#d9d9d9',
+  '10': '#bc80bd'
+};
+
 function render (element) {
   var logroll = $('#logroll');
   var leaderboard = $('#leaderboard');
@@ -101,12 +115,7 @@ function render (element) {
   var timecode = new Date(Date.parse(element.time));
   var date = timecode.getHours() + ':' + timecode.getMinutes();
 
-  logroll.prepend('<div class="logroll-item"><i>' +
-                  date + '</i> - ' +
-                  element.count + ' ' + element.feature + '(s) -' +
-                  element.hashtag + '</div>');
   var center = omnivore.wkt.parse(element.last).getBounds().getCenter();
-  pingLayer.ping([center.lng, center.lat], 'red');
 
   currentProgress += 1;
   $('#progress-bar').css('width', (100 * currentProgress / progressBarWidth) + '%');
@@ -116,17 +125,85 @@ function render (element) {
     el = $('<li>' + '#' + element.hashtag + '</li>');
     $(el).attr('tag', element.hashtag);
     $(el).attr('count', element.count);
+    $(el).attr('leader', 'no');
+    $(el).attr('color', '0');
     leaderboard.append(el);
+
   } else {
     el = $('[tag=' + element.hashtag + ']');
     var count = Number($(el).attr('count'));
     $(el).attr('count', count + element.count);
   }
+  calculateRank();
+  giveColors();
+  takeColors();
+  reColor();
   sort();
+
+  // The new color
+  var color = $(el).attr('color');
+
+  pingLayer.ping([center.lng, center.lat], 'color_' + color);
+  logroll.prepend('<div class="logroll-item"><i>' +
+                  date + '</i> - ' +
+                  element.count + ' ' + element.feature + '(s) -' +
+                  '<span style="color: ' + colorMap[color] + ';">' +
+                  element.hashtag + '<span>' + '</div>');
 
   if (logroll.children().length > 100) {
     $('#logroll div:last-child').remove();
   }
+}
+function reColor () {
+  $('#leaderboard').children().each(function () {
+    $(this).css('color', colorMap[$(this).attr('color')]);
+  });
+}
+
+function takeColors () {
+  $('.need-color').each(function () {
+    var item = $(this);
+    var color = colors.pop();
+    item.attr('color', color);
+    item.removeClass('need-color');
+  });
+}
+
+function calculateRank () {
+  var ranks = [];
+  $('#leaderboard').children().each(function () {
+    ranks.push($(this));
+  });
+  ranks.sort(function (a, b) {
+    var a_count = Number(a.attr('count'));
+    var b_count = Number(b.attr('count'));
+    if (a_count < b_count) return 1;
+    if (a_count > b_count) return -1;
+    if (a_count === b_count) return 0;
+  }).forEach(function (el, index) {
+    el.attr('rank', index + 1);
+  });
+}
+
+function giveColors () {
+  $('#leaderboard').children().each(function () {
+    var item = $(this);
+    var isLeader = (item.attr('leader') === 'yes');
+    var isTopTen = Number(item.attr('rank')) <= 10;
+    var currentColor = item.attr('color');
+
+    // give back color
+    if (isLeader && !isTopTen) {
+      colors.push(currentColor);
+      item.attr('leader', 'no');
+      item.attr('color', '0');
+    }
+
+    if (!isLeader && isTopTen) {
+      item.addClass('need-color');
+      item.attr('leader', 'yes');
+    }
+  });
 }
 
 function sort () {
@@ -143,6 +220,9 @@ function sort () {
   tinysort('ul#leaderboard>li', {attr: 'count', order: 'desc'}).forEach(function (elm, i) {
     setTimeout((function (elm, i) {
       elm.style.top = i * liHeight + 'px';
+      var $elm = $(elm);
+      if (Number($elm.attr('rank')) < 10) { $elm.show(); }
+      else $elm.hide();
     }).bind(null, elm, i), 40);
   });
 }
