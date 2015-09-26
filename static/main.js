@@ -41,9 +41,13 @@ function resetUI () {
 var paused = false;
 var progressBarWidth = 0;
 var currentProgress = 0;
+resetUI();
 $.get(root + '/timeline', function (timeline) {
   nextTimeline = JSON.parse(timeline);
   currentTimeline = nextTimeline.slice(0);
+  currentTimeline.push('LAST');
+  progressBarWidth = currentTimeline.length;
+  currentProgress = 0;
   $('#spinner').hide();
   setInterval(function () {
     if (currentTimeline.length === 0) {
