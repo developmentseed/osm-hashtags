@@ -21,6 +21,7 @@ var socket = io.connect(root);
 
 var nextTimeline = [];
 var currentTimeline = [];
+var colors = '0,1,2,3,4,5,6,7,8,9,10'.split(',');
 
 $.get(root + '/timeline', function (timeline) {
   nextTimeline = JSON.parse(timeline);
@@ -36,6 +37,9 @@ function resetUI () {
   $('#logroll').empty();
   renderGroup.clearLayers();
   $('#progress-bar').css('width', '0%');
+
+  // Reinitialize color pool
+  colors = '0,1,2,3,4,5,6,7,8,9,10'.split(',');
 }
 
 var paused = false;
@@ -98,7 +102,6 @@ function preprocess (currentTimeline) {
   return retTimeline;
 }
 
-var colors = '0,1,2,3,4,5,6,7,8,9,10'.split(',');
 var colorMap = {
   '0': '#ffffff',
   '1': '#8dd3c7',
