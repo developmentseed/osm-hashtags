@@ -28,15 +28,38 @@ app.get('/timeline', function (req, res) {
 });
 
 io.on('connection', function (socket) {
-  // Send cache to client
-  redis.lrange('features', 0, 100).then(function (results) {
-    results.forEach(function (result) {
-      socket.emit('initfeatures', result);
-    });
-  });
-
   emitHashtags();
 });
+
+function preprocess (currentTimeline) {
+  var similar = {};
+  var retTimeline = [];
+  currentTimeline.forEach(function (element) {
+    var hashtag = element[2];
+    var feature = (element[0].startsWith('P')) ? 'building' : 'way';
+    var time = element[1];
+    if (!similar.count) {
+      similar.feature = feature;
+      similar.hashtag = hashtag;
+      similar.time = time;
+      similar.last = element[0];
+      similar.count = 1;
+    } else {
+      if (hashtag === similar.hashtag &&
+          time === similar.time &&
+            feature === similar.feature) {
+        similar.count += 1;
+      } else {
+        retTimeline.push(similar);
+        similar = {};
+      }
+    }
+  });
+  if (similar.count) {
+    retTimeline.push(similar);
+  }
+  return retTimeline;
+}
 
 function emitHashtags () {
   redis.keys('hashtags:score:6:*')
@@ -92,6 +115,9 @@ function emitHashtags () {
           return 0;
         });
 
+        console.log('oldlength', timeline.length);
+        timeline = preprocess(timeline);
+        console.log('newlength', timeline.length);
         redis.set('timeline', JSON.stringify(timeline));
 
         io.emit('timeline', timeline);
@@ -109,5 +135,5 @@ pubsub.on('message', function (channel, data) {
 });
 
 // Update the leaderboard
-setInterval(emitHashtags, 60000);
+setInterval(emitHashtags, 120000);
 

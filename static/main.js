@@ -43,11 +43,11 @@ var progressBarWidth = 0;
 var currentProgress = 0;
 $.get(root + '/timeline', function (timeline) {
   nextTimeline = JSON.parse(timeline);
-  currentTimeline = preprocess(nextTimeline.slice(0));
+  currentTimeline = nextTimeline.slice(0);
   $('#spinner').hide();
   setInterval(function () {
     if (currentTimeline.length === 0) {
-      currentTimeline = preprocess(nextTimeline.slice(0));
+      currentTimeline = nextTimeline.slice(0);
       currentTimeline.push('LAST');
       progressBarWidth = currentTimeline.length;
       currentProgress = 0;
@@ -68,36 +68,6 @@ var options = {
 var pingLayer = L.pingLayer(options).addTo(map);
 pingLayer.radiusScale().range([2, 18]);
 pingLayer.opacityScale().range([1, 0]);
-
-function preprocess (currentTimeline) {
-  var similar = {};
-  var retTimeline = [];
-  currentTimeline.forEach(function (element) {
-    var hashtag = element[2];
-    var feature = (element[0].startsWith('P')) ? 'building' : 'way';
-    var time = element[1];
-    if (!similar.count) {
-      similar.feature = feature;
-      similar.hashtag = hashtag;
-      similar.time = time;
-      similar.last = element[0];
-      similar.count = 1;
-    } else {
-      if (hashtag === similar.hashtag &&
-          time === similar.time &&
-            feature === similar.feature) {
-        similar.count += 1;
-      } else {
-        retTimeline.push(similar);
-        similar = {};
-      }
-    }
-  });
-  if (similar.count) {
-    retTimeline.push(similar);
-  }
-  return retTimeline;
-}
 
 var colorMap = {
   '0': '#ffffff',
