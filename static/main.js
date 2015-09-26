@@ -21,6 +21,11 @@ var socket = io.connect(root);
 
 var nextTimeline = [];
 var currentTimeline = [];
+
+$.get(root + '/timeline', function (timeline) {
+  nextTimeline = JSON.parse(timeline);
+});
+
 socket.on('timeline', function (timeline) {
   nextTimeline = timeline;
 });

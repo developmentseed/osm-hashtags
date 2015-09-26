@@ -21,6 +21,12 @@ app.get('/hashtags/:hashtag', function (req, res, next) {
   });
 });
 
+app.get('/timeline', function (req, res) {
+  redis.get('timeline').then(function (result) {
+    res.send(result);
+  });
+});
+
 io.on('connection', function (socket) {
   // Send cache to client
   redis.lrange('features', 0, 100).then(function (results) {
@@ -59,7 +65,6 @@ function emitHashtags () {
       });
       return Promise.all(getFeatures)
       .then(function (featuresOfHashtags) {
-        console.log(featuresOfHashtags);
         // For each hashtag, union the features to get bounds
         var bounds = featuresOfHashtags.map(function (featureList) {
           var geojsonList = featureList.map(function (featureDate) {
@@ -86,6 +91,8 @@ function emitHashtags () {
           if (Date.parse(a[1]) < Date.parse(b[1])) return 1;
           return 0;
         });
+
+        redis.set('timeline', JSON.stringify(timeline));
 
         io.emit('timeline', timeline);
       });
