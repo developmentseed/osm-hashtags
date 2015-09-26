@@ -26,7 +26,7 @@ app.get('/timeline', function (req, res) {
 
 io.on('connection', function (socket) {
   redis.get('timeline').then(function (result) {
-    socket.emit('timeline', 'result');
+    socket.emit('timeline', result);
   });
 });
 

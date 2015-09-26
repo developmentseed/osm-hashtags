@@ -22,43 +22,35 @@ var socket = io.connect(root);
 var nextTimeline = [];
 var currentTimeline = [];
 var colors = '0,1,2,3,4,5,6,7,8,9,10'.split(',');
+var paused = false;
+var progressBarWidth = 0;
+var currentProgress = 0;
 
 socket.on('timeline', function (timeline) {
-  nextTimeline = timeline;
+  nextTimeline = JSON.parse(timeline);
 });
 
-var renderGroup = new L.FeatureGroup().addTo(map);
-function resetUI () {
+function reset () {
   $('#leaderboard').empty();
   $('#logroll').empty();
-  renderGroup.clearLayers();
   $('#progress-bar').css('width', '0%');
+
+  currentTimeline = nextTimeline.slice(0);
+  progressBarWidth = currentTimeline.length;
+  currentTimeline.unshift('LAST');
+  currentProgress = 0;
 
   // Reinitialize color pool
   colors = '0,1,2,3,4,5,6,7,8,9,10'.split(',');
 }
 
-var paused = false;
-var progressBarWidth = 0;
-var currentProgress = 0;
 $.get(root + '/timeline', function (timeline) {
   nextTimeline = JSON.parse(timeline);
-  currentTimeline = nextTimeline.slice(0);
-  currentTimeline.push('LAST');
-  progressBarWidth = currentTimeline.length;
-  currentProgress = 0;
+  reset();
   $('#spinner').hide();
   setInterval(function () {
-    if (currentTimeline.length === 0) {
-      currentTimeline = nextTimeline.slice(0);
-      currentTimeline.push('LAST');
-      progressBarWidth = currentTimeline.length;
-      currentProgress = 0;
-      paused = true;
-    } else {
-      if (!paused) {
-        render(currentTimeline.pop());
-      }
+    if (!paused) {
+      render(currentTimeline.pop());
     }
   }, 400);
 });
@@ -88,9 +80,10 @@ var colorMap = {
 
 function render (element) {
   if (element === 'LAST') {
+    paused = true;
     setTimeout(function () {
       paused = false;
-      resetUI();
+      reset();
     }, 3000);
     return;
   }
