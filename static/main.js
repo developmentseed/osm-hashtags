@@ -58,7 +58,7 @@ $.get(root + '/timeline', function (timeline) {
 var options = {
   lng: function (d) { return d[0]; },
   lat: function (d) { return d[1]; },
-  duration: 1000
+  duration: 2000
 };
 var pingLayer = L.pingLayer(options).addTo(map);
 pingLayer.radiusScale().range([2, 18]);
