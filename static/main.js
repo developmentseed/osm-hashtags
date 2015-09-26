@@ -23,10 +23,6 @@ var nextTimeline = [];
 var currentTimeline = [];
 var colors = '0,1,2,3,4,5,6,7,8,9,10'.split(',');
 
-$.get(root + '/timeline', function (timeline) {
-  nextTimeline = JSON.parse(timeline);
-});
-
 socket.on('timeline', function (timeline) {
   nextTimeline = timeline;
 });
@@ -45,23 +41,24 @@ function resetUI () {
 var paused = false;
 var progressBarWidth = 0;
 var currentProgress = 0;
-setInterval(function () {
-  if (nextTimeline.length === 0) { return; }
-  if (currentTimeline.length === 0) {
-    currentTimeline = preprocess(nextTimeline.slice(0));
-    progressBarWidth = currentTimeline.length;
-    currentProgress = 0;
-    paused = true;
-    setTimeout(function () {
-      paused = false;
-      resetUI();
-    }, 3000);
-  } else {
-    if (!paused) {
-      render(currentTimeline.pop());
+$.get(root + '/timeline', function (timeline) {
+  nextTimeline = JSON.parse(timeline);
+  currentTimeline = preprocess(nextTimeline.slice(0));
+  $('#spinner').hide();
+  setInterval(function () {
+    if (currentTimeline.length === 0) {
+      currentTimeline = preprocess(nextTimeline.slice(0));
+      currentTimeline.push('LAST');
+      progressBarWidth = currentTimeline.length;
+      currentProgress = 0;
+      paused = true;
+    } else {
+      if (!paused) {
+        render(currentTimeline.pop());
+      }
     }
-  }
-}, 400);
+  }, 400);
+});
 
 var options = {
   lng: function (d) { return d[0]; },
@@ -117,6 +114,14 @@ var colorMap = {
 };
 
 function render (element) {
+  if (element === 'LAST') {
+    setTimeout(function () {
+      paused = false;
+      resetUI();
+    }, 3000);
+    return;
+  }
+
   var logroll = $('#logroll');
   var leaderboard = $('#leaderboard');
 
