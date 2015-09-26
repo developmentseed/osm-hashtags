@@ -46,6 +46,11 @@ function processTimeline () {
       return list;
     })
     .then(function (list) {
+      // Filter out the hashtags that are only mentioned once
+      list = list.filter(function (tuple) {
+        return tuple[1] > 1;
+      });
+
       // For each key, get the last 50 values for that hashtag
       var getFeatures = list.map(function (tuple) {
         var hashtag = tuple[0].slice(17);
