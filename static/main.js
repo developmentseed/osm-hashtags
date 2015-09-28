@@ -1,20 +1,18 @@
 /*global L, $, io, omnivore, tinysort */
-// var root = 'http://hashtags.developmentseed.org';
+// var root = 'http://ludwig.local:8080';
 var root = '';
-var southWest = L.latLng(-89, 179);
-var northEast = L.latLng(89, -179);
-var bounds = L.latLngBounds(southWest, northEast);
 
 var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJnUi1mbkVvIn0.018aLhX0Mb0tdtaT2QNe2Q', {
     maxZoom: 2,
     minZoom: 2,
-    maxBounds: bounds,
-    attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
+    attribution: "© <a href='https://www.mapbox.com/map-feedback/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>"
 });
 
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([13.025966, -50], 2);
+    .setView([18.025966, -30], 2)
+    .setMaxBounds([ [89, -230],[-89, 230] ])
+    ;
 
 // new L.Control.Zoom({ position: 'topright' }).addTo(map);
 var socket = io.connect(root);
@@ -67,13 +65,13 @@ pingLayer.opacityScale().range([1, 0]);
 var colorMap = {
   '0': '#ffffff',
   '1': '#8dd3c7',
-  '2': '#ffffb3',
+  '2': '#F2E855',
   '3': '#bebada',
-  '4': '#fb8072',
-  '5': '#80b1d3',
+  '4': '#F2695A',
+  '5': '#6CB7EB',
   '6': '#fdb462',
   '7': '#b3de69',
-  '8': '#fccde5',
+  '8': '#FA89B1',
   '9': '#d9d9d9',
   '10': '#bc80bd'
 };
@@ -133,6 +131,7 @@ function render (element) {
     $('#logroll div:last-child').remove();
   }
 }
+
 function reColor () {
   $('#leaderboard').children().each(function () {
     $(this).css('color', colorMap[$(this).attr('color')]);

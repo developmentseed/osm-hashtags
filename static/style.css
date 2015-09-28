@@ -1,26 +1,33 @@
-document{
-    background-color: black;
+::-moz-selection { /* Code for Firefox */
+    background: #CF4828;
 }
 
-.color_0{fill: #ffffff; stroke-width: 1px;}
-.color_1{fill: #8dd3c7; stroke-width: 1px;}
-.color_2{fill: #ffffb3; stroke-width: 1px;}
-.color_3{fill: #bebada; stroke-width: 1px;}
-.color_4{fill: #fb8072; stroke-width: 1px;}
-.color_5{fill: #80b1d3; stroke-width: 1px;}
-.color_6{fill: #fdb462; stroke-width: 1px;}
-.color_7{fill: #b3de69; stroke-width: 1px;}
-.color_8{fill: #fccde5; stroke-width: 1px;}
-.color_9{fill: #d9d9d9; stroke-width: 1px;}
-.color_10{fill: #bc80bd; stroke-width: 1px;}
+::selection {
+    background: #CF4828;
+}
+ 
+.color_0{fill: rgba(0,0,0,0); stroke: #ffffff; stroke-width: 2px;}
+.color_1{fill: rgba(0,0,0,0);stroke: #8dd3c7; stroke-width: 2px;}
+.color_2{fill: rgba(0,0,0,0);stroke: #F2E855; stroke-width: 2px;}
+.color_3{fill: rgba(0,0,0,0);stroke: #bebada; stroke-width: 2px;}
+.color_4{fill: rgba(0,0,0,0);stroke: #F2695A; stroke-width: 2px;}
+.color_5{fill: rgba(0,0,0,0);stroke: #6CB7EB; stroke-width: 2px;}
+.color_6{fill: rgba(0,0,0,0);stroke: #fdb462; stroke-width: 2px;}
+.color_7{fill: rgba(0,0,0,0);stroke: #b3de69; stroke-width: 2px;}
+.color_8{fill: rgba(0,0,0,0);stroke: #FA89B1; stroke-width: 2px;}
+.color_9{fill: rgba(0,0,0,0);stroke: #d9d9d9; stroke-width: 2px;}
+.color_10{fill: rgba(0,0,0,0);stroke: #bc80bd; stroke-width: 2px;}
+
+
 
 body {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     margin: 0px;
 }
 #map {
+  left:20%;
   height:100%;
-  width:100%;
+  width:80%;
   padding:0px;
   margin:0px;
   position: absolute;
@@ -141,7 +148,7 @@ ul#leaderboard li {
 .linebreak{
   height: 1px;
   width: 100%;
-  background-color: #CCC;
+  background-color: #666;
   margin: 0px;
 }
 
@@ -160,14 +167,14 @@ ul#leaderboard li {
   top: 4px;
 }
 
-.leaflet-container {
-    background-color:rgba(0,0,0,1);
+.leaflet-control-attribution{
+  background: red;
 }
 
 #logo{
   z-index: 1000;
   position:absolute;
-  top: 8px;
+  top: 10px;
   right: 8px;
 }
 
@@ -176,14 +183,13 @@ ul#leaderboard li {
 #spinner {
   text-align: center;
   position: relative;
-  top: 50px;
+  top: 80px;
 }
 .spinner > div {
   width: 10px;
   height: 10px;
 
   background-color: #666;
-
   border-radius: 100%;
   display: inline-block;
   -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
@@ -217,4 +223,8 @@ ul#leaderboard li {
     transform: scale(1.0);
     -webkit-transform: scale(1.0);
   }
+}
+
+.leaflet-container{
+    background-color: black;
 }
