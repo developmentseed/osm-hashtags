@@ -86,11 +86,21 @@ function render (element) {
     return;
   }
 
+  function zeroPad (n, c) {
+    var s = String(n);
+    if (s.length < c) {
+      return zeroPad("0" + n, c);
+    }
+    else {
+      return s;
+    }
+  }
+
   var logroll = $('#logroll');
   var leaderboard = $('#leaderboard');
 
   var timecode = new Date(Date.parse(element.time));
-  var date = timecode.getHours() + ':' + timecode.getMinutes();
+  var date = timecode.getHours() + ':' + zeroPad(timecode.getMinutes(), 2);
 
   var center = omnivore.wkt.parse(element.last).getBounds().getCenter();
 
