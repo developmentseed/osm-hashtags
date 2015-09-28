@@ -4,11 +4,13 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var path = require('path');
 var Redis = require('ioredis');
+var cors = require('cors');
 
 var pubsub = new Redis();
 var redis = new Redis();
 server.listen(8080);
 
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'static')));
 
 app.get('/hashtags/:hashtag', function (req, res, next) {
