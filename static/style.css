@@ -24,13 +24,18 @@ body {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     margin: 0px;
 }
+
+#mapbox{
+  right:0px;
+  margin-left:300px;
+}
+
 #map {
-  left:300px;
   height:100%;
-  width:80%;
+  width:100%;
   padding:0px;
   margin:0px;
-  position: absolute;
+  position: relative;
 }
 
 
@@ -75,12 +80,6 @@ h2 {
   bottom: 15px;
 }
 
-.red {
-  fill: rgba(0,0,0,0);
-  stroke: gold;
-  stroke-width: 1px;
-}
-
 #sidebox{
   z-index: 1000;
   top: 0px;
@@ -100,10 +99,10 @@ h2 {
 
 #logroll-box{
   position: relative;
-  height:25%;
+  min-height:20%;
+  height:60%;
   padding: 5px;
   overflow:auto;
-;
 }
 
 #logroll{
@@ -117,6 +116,7 @@ h2 {
   height: 8px; 
   border: 1px solid black;
   bottom: 0;
+  background: rgb(20, 20, 20);
   position: absolute;
 }
 
@@ -128,9 +128,10 @@ h2 {
 
 #leaderboard {
   position: relative;
-  height: 60%;
+  height: 370px;
   padding: 0px;
   margin: 0px;
+  overflow: hidden;
 }
 
 ul#leaderboard li {
@@ -166,10 +167,6 @@ ul#leaderboard li {
 .leaflet-control-zoom{
   right: 10px;
   top: 4px;
-}
-
-.leaflet-control-attribution{
-  background: red;
 }
 
 #logo{
@@ -229,6 +226,37 @@ ul#leaderboard li {
     background-color: black;
 }
 
-document{
-  overflow: hidden;
+body{
+  background-color: black;
+}
+
+/*Scrollbar Disable*/
+
+::-webkit-scrollbar {
+    width: 12px;
+    display: none; 
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0); 
+}
+::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba(0,0,0,0); 
+}
+
+/*Internet Explorer, Augh!
+*/body{
+  scrollbar-base-color: rgba(0,0,0,0);
+  scrollbar-base-color: rgba(0,0,0,0);
+  scrollbar-3dlight-color: rgba(0,0,0,0);
+  scrollbar-highlight-color: rgba(0,0,0,0);
+  scrollbar-track-color: rgba(0,0,0,0);
+  scrollbar-arrow-color: rgba(0,0,0,0);
+  scrollbar-shadow-color: rgba(0,0,0,0);
+  scrollbar-dark-shadow-color: rgba(0,0,0,0);
 }

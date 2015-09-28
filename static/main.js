@@ -10,7 +10,7 @@ var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x
 
 var map = L.map('map', { zoomControl: false })
     .addLayer(mapboxTiles)
-    .setView([18.025966, -15], 2)
+    .setView([18.025966, -5], 2)
     .setMaxBounds([ [89, -230],[-89, 230] ])
     ;
 
