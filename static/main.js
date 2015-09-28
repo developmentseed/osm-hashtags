@@ -86,7 +86,7 @@ function render (element) {
     return;
   }
 
-  function zeroPad = function(n, c) {
+  function zeroPad (n, c) {
     var s = String(n);
     if (s.length < c) {
       return zeroPad("0" + n, c);
