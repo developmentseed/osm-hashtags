@@ -1,6 +1,6 @@
 /*global L, $, io, omnivore, tinysort */
-var root = 'http://ludwig.local:8080';
-// var root = '';
+// var root = 'http://ludwig.local:8080';
+var root = '';
 
 var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJnUi1mbkVvIn0.018aLhX0Mb0tdtaT2QNe2Q', {
     maxZoom: 2,
