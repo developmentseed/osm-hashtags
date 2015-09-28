@@ -8,9 +8,9 @@ var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/devseed.24440516/{z}/{x
     attribution: "© <a href='https://www.mapbox.com/map-feedback/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>"
 });
 
-var map = L.map('map')
+var map = L.map('map', { zoomControl: false })
     .addLayer(mapboxTiles)
-    .setView([18.025966, -30], 2)
+    .setView([18.025966, -15], 2)
     .setMaxBounds([ [89, -230],[-89, 230] ])
     ;
 
